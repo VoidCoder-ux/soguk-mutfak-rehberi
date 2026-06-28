@@ -228,9 +228,10 @@ main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
   </div>
   <div class="model-wrap">
     <div class="mdot"></div>
-    <select id="model-select">
-      <option value="deepseek-chat">deepseek-chat</option>
+    <select id="model-select" onchange="updateKeyIndicator()">
+      <option value="deepseek-chat">deepseek-chat (hızlı)</option>
       <option value="deepseek-reasoner">deepseek-reasoner</option>
+      <option value="gemini-2.5-flash">✓ gemini (web doğrulamalı)</option>
     </select>
   </div>
 
@@ -418,18 +419,81 @@ function deleteSaved(i){
 
 function loadSaved(i){ current = saved[i]; showSearch(); }
 
+// ── Sağlayıcılar ────────────────────────────────────────
+function providerOf(model){ return model.indexOf('gemini') === 0 ? 'gemini' : 'deepseek'; }
+var PROV = {
+  deepseek:{ store:'gm_api_key',    label:'DeepSeek',      ph:'sk-...',  link:'https://platform.deepseek.com/api_keys', linkText:'platform.deepseek.com' },
+  gemini:  { store:'gm_gemini_key', label:'Google Gemini', ph:'AIza...', link:'https://aistudio.google.com/apikey',     linkText:'aistudio.google.com' }
+};
+function getKey(p){ return localStorage.getItem(PROV[p].store) || ''; }
+function userMsg(q){ return '"' + q + '" tarifi. 10 porsiyon için. Yapılışını adım adım, detaylı ve anlaşılır anlat; oran, sıcaklık ve süreleri klasik kaynaklarla doğrula. Sadece JSON döndür.'; }
+
+async function callDeepSeek(model, q, signal){
+  var body = {
+    model: model,
+    max_tokens: model === 'deepseek-reasoner' ? 8000 : 6000,
+    messages: [
+      { role: 'system', content: SYS },
+      { role: 'user', content: userMsg(q) }
+    ]
+  };
+  if(model === 'deepseek-chat'){ body.response_format = { type: 'json_object' }; }
+  var res = await fetch('https://api.deepseek.com/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getKey('deepseek') },
+    body: JSON.stringify(body), signal: signal
+  });
+  if(!res.ok){ var eb = await res.json().catch(function(){ return {}; });
+    throw new Error('API hatası ' + res.status + (eb.error && eb.error.message ? ': ' + eb.error.message : '')); }
+  var data = await res.json();
+  var text = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '';
+  return { text: text, webSources: [] };
+}
+
+async function callGemini(model, q, signal){
+  // Google Search ile "grounding": gerçek, tıklanabilir web kaynakları döner
+  var body = {
+    systemInstruction: { parts: [{ text: SYS }] },
+    contents: [{ role: 'user', parts: [{ text: userMsg(q) + ' Bilgileri güncel ve güvenilir web kaynaklarıyla doğrula.' }] }],
+    tools: [{ google_search: {} }],
+    generationConfig: { maxOutputTokens: 8192, temperature: 0.4, thinkingConfig: { thinkingBudget: 0 } }
+  };
+  var res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-goog-api-key': getKey('gemini') },
+    body: JSON.stringify(body), signal: signal
+  });
+  if(!res.ok){ var eb = await res.json().catch(function(){ return {}; });
+    throw new Error('Gemini hatası ' + res.status + (eb.error && eb.error.message ? ': ' + eb.error.message : '')); }
+  var data = await res.json();
+  var cand = (data.candidates && data.candidates[0]) || {};
+  var parts = (cand.content && cand.content.parts) || [];
+  var text = parts.map(function(p){ return p.text || ''; }).join('');
+  var sources = [], seen = {};
+  ((cand.groundingMetadata && cand.groundingMetadata.groundingChunks) || []).forEach(function(c){
+    if(c.web && c.web.uri && !seen[c.web.uri]){ seen[c.web.uri] = 1; sources.push({ title: c.web.title || c.web.uri, uri: c.web.uri }); }
+  });
+  return { text: text, webSources: sources };
+}
+
 async function doSearch(){
-  if(!API_KEY){ openKeyModal(); return; }
+  var model = $i('model-select').value;
+  var prov = providerOf(model);
+  if(!getKey(prov)){ openKeyModal(); return; }
   var q = $i('q').value.trim();
   if(!q) return;
   var btn = $i('sbtn');
   btn.disabled = true; btn.textContent = '...';
   addRecent(q);
 
+  var firstStep = prov === 'gemini'
+    ? '🌐 Web&#39;de aranıyor &amp; kaynaklar bulunuyor...'
+    : '📚 Escoffier &amp; Larousse derleniyor...';
+
   sc('<div class="loading">'
     + '<div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>'
     + '<div class="lsteps">'
-    + '<div class="ls active" id="l1">📚 Escoffier &amp; Larousse derleniyor...</div>'
+    + '<div class="ls active" id="l1">' + firstStep + '</div>'
     + '<div class="ls" id="l2">🔬 Teknik adımlar hazırlanıyor...</div>'
     + '<div class="ls" id="l3">✓ HACCP kontrolü yapılıyor...</div>'
     + '<div class="ls" id="l4">🍽 Tarif kartı oluşturuluyor...</div>'
@@ -449,39 +513,15 @@ async function doSearch(){
   var timeout = setTimeout(function(){ if(gmController) gmController.abort(); }, 150000); // 150 sn
 
   try {
-    var model = $i('model-select').value;
-    var body = {
-      model: model,
-      // detaylı adımlar için yüksek bütçe; reasoner akıl yürütme + cevabı paylaşır
-      max_tokens: model === 'deepseek-reasoner' ? 8000 : 6000,
-      messages: [
-        { role: 'system', content: SYS },
-        { role: 'user', content: '"' + q + '" tarifi. 10 porsiyon için. Yapılışını adım adım, detaylı ve anlaşılır anlat; oran, sıcaklık ve süreleri klasik kaynaklarla doğrula. Sadece JSON döndür.' }
-      ]
-    };
-    // deepseek-reasoner JSON output modunu desteklemez; sadece deepseek-chat'te aç
-    if(model === 'deepseek-chat'){ body.response_format = { type: 'json_object' }; }
-    var res = await fetch('https://api.deepseek.com/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + API_KEY
-      },
-      body: JSON.stringify(body),
-      signal: gmController.signal
-    });
+    var out = prov === 'gemini'
+      ? await callGemini(model, q, gmController.signal)
+      : await callDeepSeek(model, q, gmController.signal);
 
     clearTimeout(timeout);
     clearInterval(timer);
     for(var x=1;x<=4;x++){ var el=$i('l'+x); if(el){el.classList.remove('active');el.classList.add('done');} }
 
-    if(!res.ok){
-      var eb = await res.json().catch(function(){ return {}; });
-      throw new Error('API hatası ' + res.status + (eb.error && eb.error.message ? ': ' + eb.error.message : ''));
-    }
-
-    var data = await res.json();
-    var text = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '';
+    var text = out.text;
     if(!text.trim()){
       throw new Error('Model boş yanıt döndürdü. ' + (model === 'deepseek-reasoner' ? 'deepseek-reasoner uzun düşünebilir; tekrar deneyin veya deepseek-chat kullanın.' : 'Tekrar deneyin.'));
     }
@@ -503,6 +543,7 @@ async function doSearch(){
       recipe = JSON.parse(fixed);
     }
 
+    if(out.webSources && out.webSources.length){ recipe._web = out.webSources; }
     current = recipe;
     render(recipe);
 
@@ -584,6 +625,11 @@ function render(r, keep){
     return '<div class="src-item">'+esc(s)+'</div>';
   }).join('');
 
+  // Gemini web grounding ile gelen gerçek, tıklanabilir kaynaklar
+  var web = (r._web||[]).map(function(s){
+    return '<div class="src-item" style="border-left-color:var(--green)"><a href="'+esc(s.uri)+'" target="_blank" rel="noopener noreferrer" style="color:var(--green);text-decoration:none">🔗 '+esc(s.title)+'</a></div>';
+  }).join('');
+
   var fs = r.food_safety || {};
 
   sc('<div class="recipe">'
@@ -607,7 +653,9 @@ function render(r, keep){
 
     + '<div class="srcbar">'
     +   '<div><div class="sl">Kaynak</div><div class="sv">'+esc(r.source||'')+'</div></div>'
-    +   '<div class="vbadge">✓ '+esc(val(r.verification_count, 2))+' kaynak doğruladı</div>'
+    +   (web
+          ? '<div class="vbadge" style="color:var(--green)">🔍 '+r._web.length+' web kaynağı doğruladı</div>'
+          : '<div class="vbadge">✓ '+esc(val(r.verification_count, 2))+' kaynak doğruladı</div>')
     + '</div>'
 
     + '<div class="grid">'
@@ -647,7 +695,9 @@ function render(r, keep){
 
     + (r.chef_note ? '<div class="cnote"><div class="clbl">Şef Notu</div>'+esc(r.chef_note)+(r.local_alternatives ? '<div class="alt">🇹🇷 Türkiye Alternatifi: '+esc(r.local_alternatives)+'</div>' : '')+'</div>' : '')
 
-    + (srcs ? '<div class="card full"><div class="ctitle">Kaynaklar</div>'+srcs+'</div>' : '')
+    + (web ? '<div class="card full" style="margin-bottom:11px;border-left:2px solid var(--green)"><div class="ctitle">🔍 Doğrulanmış Web Kaynakları ('+r._web.length+') — tıklayıp kontrol edebilirsin</div>'+web+'</div>' : '')
+
+    + (srcs ? '<div class="card full"><div class="ctitle">Kaynaklar (model atfı)</div>'+srcs+'</div>' : '')
 
   + '</div>');
 }
@@ -670,6 +720,10 @@ function recipeToText(r){
     L.push((i+1) + '. ' + (s.title ? s.title + ' — ' : '') + (s.text||''));
   });
   if(r.chef_note){ L.push(''); L.push('ŞEF NOTU: ' + r.chef_note); }
+  if(r._web && r._web.length){
+    L.push(''); L.push('DOĞRULANMIŞ WEB KAYNAKLARI');
+    r._web.forEach(function(s){ L.push('- ' + (s.title||'') + ': ' + s.uri); });
+  }
   return L.join('\n');
 }
 function copyRecipe(){
@@ -722,6 +776,7 @@ function exportPDF(){
   var techH = (r.techniques||[]).filter(function(t){ return t.name; }).map(function(t){ return '<div class="tech"><div class="tn">'+esc(t.name)+'</div><div class="te">'+esc(t.explanation)+'</div></div>'; }).join('');
   var warnH = (r.warnings||[]).filter(Boolean).map(function(w){ return '<div class="w">⚠ '+esc(w)+'</div>'; }).join('');
   var srcH  = (r.sources_full||[]).filter(Boolean).map(function(s){ return '<div class="sri">'+esc(s)+'</div>'; }).join('');
+  var webH  = (r._web||[]).map(function(s){ return '<div class="sri"><a href="'+esc(s.uri)+'" style="color:#2d7a4a">🔗 '+esc(s.title)+'</a></div>'; }).join('');
 
   var html = '<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8"><title>'+esc(r.name_original)+'</title><style>'+css+'</style></head><body>'
     + '<h1>'+esc(r.name_original)+'</h1><h2>'+esc(r.name_tr||'')+'</h2>'
@@ -738,7 +793,8 @@ function exportPDF(){
     + '<div class="sg"><div class="si"><div class="sl">Saklama</div><div class="sv">'+esc(fs.storage_temp||'—')+'</div></div><div class="si"><div class="sl">Maks. Süre</div><div class="sv" style="color:#333">'+esc(fs.max_duration||'—')+'</div></div><div class="si"><div class="sl">Servis</div><div class="sv">'+esc(fs.service_temp||'—')+'</div></div><div class="si"><div class="sl">HACCP Notu</div><div style="font-size:11px;color:#666;margin-top:2px">'+esc(fs.haccp_notes||'—')+'</div></div></div>'
     + warnH
     + (r.chef_note ? '<div class="sec">Şef Notu</div><div class="cn">'+esc(r.chef_note)+(r.local_alternatives?'<br><br><strong style="font-style:normal;color:#c9a96e">🇹🇷 Türkiye Alternatifi:</strong> '+esc(r.local_alternatives):'')+'</div>' : '')
-    + (srcH ? '<div class="sec">Kaynaklar</div>'+srcH : '')
+    + (webH ? '<div class="sec">Doğrulanmış Web Kaynakları</div>'+webH : '')
+    + (srcH ? '<div class="sec">Kaynaklar (model atfı)</div>'+srcH : '')
     + '<footer>Garde Manger — Profesyonel Soğuk Mutfak Rehberi</footer>'
     + '</body></html>';
 
@@ -774,17 +830,25 @@ function exportPDF(){
 }
 
 
-// ── API KEY ────────────────────────────────────────────
-var API_KEY = localStorage.getItem('gm_api_key') || '';
+// ── API KEY (sağlayıcıya göre) ──────────────────────────
+var keyProv = 'deepseek';   // modal hangi sağlayıcı için açıldı
+
+function currentProvider(){ return providerOf($i('model-select').value); }
 
 function updateKeyIndicator(){
   var ind = $i('key-indicator');
   if(!ind) return;
-  ind.textContent = API_KEY ? '🟢' : '🔴';
+  ind.textContent = getKey(currentProvider()) ? '🟢' : '🔴';
 }
 
 function openKeyModal(){
-  $i('key-input').value = API_KEY;
+  keyProv = currentProvider();
+  var c = PROV[keyProv];
+  $i('key-modal-title').textContent = c.label + ' API Key';
+  $i('key-modal-desc').textContent = 'Seçili model ' + c.label + ' kullanıyor. Kendi ' + c.label + ' API anahtarını gir. Anahtar sadece tarayıcında saklanır, hiçbir yere gönderilmez.';
+  $i('key-input').placeholder = c.ph;
+  $i('key-input').value = getKey(keyProv);
+  $i('key-modal-hint').innerHTML = 'Anahtarını <a href="' + c.link + '" target="_blank" rel="noopener noreferrer">' + c.linkText + '</a> adresinden alabilirsin.';
   $i('key-modal').classList.remove('hidden');
   setTimeout(function(){ $i('key-input').focus(); }, 100);
 }
@@ -794,13 +858,9 @@ function closeKeyModal(){
 }
 
 function saveKey(){
-  var val = $i('key-input').value.trim();
-  if(!val){ alert('Lütfen geçerli bir API anahtarı gir.'); return; }
-  if(!val.startsWith('sk-')){
-    if(!confirm('DeepSeek anahtarı genellikle sk- ile başlar. Yine de kaydetmek istiyor musun?')) return;
-  }
-  API_KEY = val;
-  localStorage.setItem('gm_api_key', API_KEY);
+  var v = $i('key-input').value.trim();
+  if(!v){ alert('Lütfen geçerli bir API anahtarı gir.'); return; }
+  localStorage.setItem(PROV[keyProv].store, v);
   updateKeyIndicator();
   closeKeyModal();
 }
@@ -822,11 +882,11 @@ updateKeyIndicator();
 
 <div class="modal-overlay hidden" id="key-modal">
   <div class="modal">
-    <div class="modal-title">DeepSeek API Key</div>
-    <div class="modal-desc">Uygulamayı kullanmak için kendi DeepSeek API anahtarını gir. Anahtar sadece tarayıcında saklanır, hiçbir yere gönderilmez.</div>
+    <div class="modal-title" id="key-modal-title">DeepSeek API Key</div>
+    <div class="modal-desc" id="key-modal-desc">Uygulamayı kullanmak için kendi DeepSeek API anahtarını gir. Anahtar sadece tarayıcında saklanır, hiçbir yere gönderilmez.</div>
     <div class="modal-label">API Anahtarı</div>
     <input class="modal-input" id="key-input" type="password" placeholder="sk-..." autocomplete="off" spellcheck="false">
-    <div class="modal-hint">
+    <div class="modal-hint" id="key-modal-hint">
       Anahtarını <a href="https://platform.deepseek.com/api_keys" target="_blank" rel="noopener noreferrer">platform.deepseek.com</a> adresinden alabilirsin.
     </div>
     <div class="modal-btns">

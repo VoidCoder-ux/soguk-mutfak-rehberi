@@ -7,8 +7,16 @@ Escoffier, Larousse Gastronomique ve CIA gibi profesyonel kaynaklara dayalı, De
 1. Uygulamayı aç (aşağıdaki canlı link veya `index.html` dosyasını tarayıcıda açarak).
 2. Sağ üstteki **🔴 API Key** butonuna tıkla ve kendi DeepSeek API anahtarını gir.
    Anahtarını [platform.deepseek.com](https://platform.deepseek.com/api_keys) adresinden alabilirsin.
-3. Model seç (`deepseek-chat` hızlı/uygun, `deepseek-reasoner` daha derin akıl yürütür).
-4. Bir tarif ara (ör. "Somon Gravlax"). Sonuçları kaydedebilir veya PDF/HTML olarak dışa aktarabilirsin.
+3. Model seç:
+   - `deepseek-chat` / `deepseek-reasoner` — hızlı taslak (DeepSeek anahtarı gerekir).
+   - `gemini (web doğrulamalı)` — Google Search ile arar ve **gerçek, tıklanabilir kaynak linkleri** verir (Gemini anahtarı gerekir; [aistudio.google.com](https://aistudio.google.com/apikey) — ücretsiz tier).
+4. Bir tarif ara (ör. "Somon Gravlax"). Sonuçları kaydedebilir, panoya kopyalayabilir veya PDF'e aktarabilirsin.
+
+> Her sağlayıcının kendi API anahtarı vardır; modeli değiştirince sağ üstteki gösterge (🟢/🔴) o sağlayıcının anahtarına göre güncellenir. Anahtarlar yalnızca tarayıcında saklanır.
+
+### Doğrulama hakkında
+
+`gemini (web doğrulamalı)` modu cevabı **gerçek web kaynaklarına** dayandırır ve bunları tıklanabilir link olarak gösterir — kendin kontrol edebilirsin. DeepSeek modlarındaki "kaynak" ve doğrulama bilgisi ise modelin kendi atfıdır (canlı doğrulama değildir). Kritik oran/sıcaklık ve gıda güvenliği için kaynakları teyit etmen önerilir.
 
 ## Özellikler
 
