@@ -432,6 +432,7 @@ async function callDeepSeek(model, q, signal){
   var body = {
     model: model,
     max_tokens: model === 'deepseek-reasoner' ? 8000 : 6000,
+    temperature: 0.2,   // tutarlılık: düşük rastgelelik (reasoner bunu yok sayar)
     messages: [
       { role: 'system', content: SYS },
       { role: 'user', content: userMsg(q) }
@@ -456,7 +457,7 @@ async function callGemini(model, q, signal){
     systemInstruction: { parts: [{ text: SYS }] },
     contents: [{ role: 'user', parts: [{ text: userMsg(q) + ' Bilgileri güncel ve güvenilir web kaynaklarıyla doğrula.' }] }],
     tools: [{ google_search: {} }],
-    generationConfig: { maxOutputTokens: 8192, temperature: 0.4, thinkingConfig: { thinkingBudget: 0 } }
+    generationConfig: { maxOutputTokens: 8192, temperature: 0.2, thinkingConfig: { thinkingBudget: 0 } }
   };
   var res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent', {
     method: 'POST',
