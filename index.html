@@ -742,13 +742,30 @@ function exportPDF(){
     + '<footer>Garde Manger — Profesyonel Soğuk Mutfak Rehberi</footer>'
     + '</body></html>';
 
-  // Yazdır penceresi aç → kullanıcı "PDF olarak kaydet" seçer (iOS dahil her yerde çalışır)
-  var printHtml = html.replace('</body></html>',
-    '<scr' + 'ipt>window.onload=function(){setTimeout(function(){try{window.focus();window.print();}catch(e){}},400);};</scr' + 'ipt></body></html>');
+  // Yazdır penceresi aç → kullanıcı butonla "PDF olarak kaydet" seçer (iOS dahil her yerde çalışır).
+  // Sayfanın en üstüne görünür butonlar ekleniyor; yazdırırken gizleniyorlar.
+  var toolbar =
+      '<style>'
+    + '.gm-bar{position:sticky;top:0;z-index:10;display:flex;gap:8px;align-items:center;flex-wrap:wrap;'
+    +   'padding:10px 14px;background:#fff;border-bottom:1px solid #e8e2d5;'
+    +   'font-family:-apple-system,Segoe UI,Arial,sans-serif;}'
+    + '.gm-bar button{font-size:14px;padding:10px 16px;border-radius:8px;border:1px solid #c9a96e;cursor:pointer;}'
+    + '.gm-bar .gm-go{background:#c9a96e;color:#fff;}'
+    + '.gm-bar .gm-cl{background:#fff;color:#555;border-color:#ccc;}'
+    + '.gm-bar small{color:#888;font-size:11px;flex-basis:100%;}'
+    + '@media print{.gm-bar{display:none!important;}}'
+    + '</style>'
+    + '<div class="gm-bar">'
+    +   '<button class="gm-go" onclick="window.print()">🖨 PDF olarak kaydet / Yazdır</button>'
+    +   '<button class="gm-cl" onclick="window.close()">✕ Kapat</button>'
+    +   '<small>iPhone: yukarıdaki butona bas → açılan ekranda Paylaş ↗ → “Dosyalara Kaydet” ile PDF olarak kaydet.</small>'
+    + '</div>';
+
+  var printHtml = html.replace('</head><body>', '</head><body>' + toolbar);
 
   var w = window.open('', '_blank');
   if(!w){
-    alert('PDF oluşturmak için açılır pencereye (pop-up) izin ver, sonra tekrar dene.\n\nAçılan sayfada Yazdır → "PDF olarak kaydet" seç.');
+    alert('PDF oluşturmak için açılır pencereye (pop-up) izin ver, sonra tekrar dene.');
     return;
   }
   w.document.open();
