@@ -19,7 +19,7 @@
   --r:12px;--rs:8px;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;-webkit-text-size-adjust:100%;}
 
 header{padding:15px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--bg2);position:sticky;top:0;z-index:100;}
 .logo{display:flex;align-items:center;gap:11px;}
@@ -41,7 +41,7 @@ aside{width:238px;min-width:238px;background:var(--bg2);border-right:1px solid v
 .nav-item:hover{background:var(--bg3);color:var(--text);}
 .nav-item.active{background:var(--gold-bg);color:var(--gold);}
 .div{height:1px;background:var(--border);margin:7px 13px;}
-.recent-list{flex:1;overflow-y:auto;padding:5px 13px 13px;}
+.recent-list{flex:1;overflow-y:auto;padding:5px 13px 13px;-webkit-overflow-scrolling:touch;}
 .recent-list::-webkit-scrollbar{width:3px;}
 .recent-list::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:2px;}
 .ri{padding:7px 10px;border-radius:var(--rs);cursor:pointer;font-size:12.5px;color:var(--text2);transition:background .12s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -62,7 +62,7 @@ main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
 .qtag{font-size:11.5px;padding:4px 12px;border-radius:99px;border:1px solid var(--border2);color:var(--text2);cursor:pointer;transition:all .12s;background:transparent;font-family:'DM Sans',sans-serif;}
 .qtag:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-bg);}
 
-.content{flex:1;overflow-y:auto;padding:22px;}
+.content{flex:1;overflow-y:auto;padding:22px;-webkit-overflow-scrolling:touch;}
 .content::-webkit-scrollbar{width:4px;}
 .content::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:2px;}
 
@@ -176,10 +176,20 @@ main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
 .abtn.copied{border-color:rgba(126,200,150,.4);color:var(--green);background:var(--green-bg);}
 @media(max-width:768px){
   .menu-btn{display:block;}
-  aside{position:fixed;top:0;left:0;bottom:0;z-index:95;transform:translateX(-100%);transition:transform .25s ease;box-shadow:0 0 40px rgba(0,0,0,.5);}
+  header{padding:10px 12px;padding-top:max(10px,env(safe-area-inset-top));gap:8px;}
+  .logo-sub{display:none;}
+  .logo-icon{width:30px;height:30px;}
+  .logo-name{font-size:15px;}
+  .model-wrap{padding:4px 9px;gap:5px;}
+  #model-select{font-size:11px;max-width:120px;}
+  #key-btn{padding:6px 10px;}
+  aside{position:fixed;top:0;left:0;bottom:0;z-index:95;width:80%;max-width:300px;transform:translateX(-100%);transition:transform .25s ease;box-shadow:0 0 40px rgba(0,0,0,.5);padding-top:env(safe-area-inset-top);}
   aside.open{transform:translateX(0);}
+  .content{padding:16px 14px;}
+  .search-wrap{padding:12px 14px;}
   .grid{grid-template-columns:1fr;}
   .sgrid{grid-template-columns:1fr;}
+  .abtns{flex-wrap:wrap;}
 }
 
 /* API KEY MODAL */
@@ -293,7 +303,7 @@ var gmController = null;        // aktif isteği iptal etmek için
 var basePortions = 10;         // tarifin orijinal porsiyonu
 var viewPortions = 10;         // ekranda gösterilen (ölçeklenmiş) porsiyon
 
-var SYS = 'Sen profesyonel bir soğuk mutfak (garde manger) asistanısın. Kullanıcın Türkiye\'de deneyimli bir soğuk şef.\n\nKAYNAK HİYERARŞİSİ: Escoffier Le Guide Culinaire, Larousse Gastronomique, The Professional Chef (CIA), Le Cordon Bleu, Michelin yıldızlı şef yayınları, ACF standartları. EV TİPİ BİLGİ KULLANMA.\n\nHer adımda: nasıl yapılır (teknik hareket) + kontrol noktası + yaygın hata. 2-3 cümle yeterli. Gram/ml/°C kullan.\n\nSADECE geçerli JSON döndür. Başka metin yok, markdown yok.\n\n{"name_original":"","name_tr":"","source":"","verified_by":"","verification_count":2,"category":"","difficulty":"","service_type":"","portions":10,"prep_time":"","total_time":"","ingredients":[{"name":"","amount":"","unit":""}],"fire_note":"","steps":[{"title":"","text":"","temp":"","duration":"","critical":""}],"techniques":[{"name":"","explanation":""}],"mise_en_place":[""],"plating":"","variations":"","food_safety":{"storage_temp":"","max_duration":"","service_temp":"","haccp_notes":""},"warnings":[""],"chef_note":"","local_alternatives":"","sources_full":[""]}';
+var SYS = 'Sen profesyonel bir soğuk mutfak (garde manger) asistanısın. Kullanıcın Türkiye\'de deneyimli bir soğuk şef.\n\nKAYNAK & DOĞRULUK: Tarifleri Escoffier Le Guide Culinaire, Larousse Gastronomique, The Professional Chef (CIA), Le Cordon Bleu ve Michelin/ACF standartlarına dayandır. Klasik oran, sıcaklık ve sürelerin bu kaynaklarla TUTARLI olduğundan emin ol. Bilmediğin bir bilgiyi UYDURMA; emin olmadığın yerde klasik ve güvenli olanı seç. "source" alanına yalnızca gerçekten dayandığın kaynağı yaz, sayfa numarası uydurma. "verification_count": bilgiyi birden fazla klasik kaynakta doğrulayabiliyorsan 2 veya daha fazla, yalnızca tek kaynak varsa 1 yaz. Miktarları istenen porsiyona göre tutarlı ve doğru hesapla. EV TİPİ / amatör bilgi kullanma.\n\nANLATIM: Yapılışı AÇIK, anlaşılır ve profesyonel bir dille ADIM ADIM detaylandır. Her adımda şunları belirt: (1) tam olarak ne yapılır — teknik hareket ve nasıl uygulandığı, (2) kontrol noktası — kıvam, renk, sıcaklık, koku veya dokunuş ile doğruyu nasıl anlarsın, (3) neden önemli olduğu ve bu adımda sık yapılan hata. Adım metni (text) 3-5 cümle olsun; acemi bir aşçının bile uygulayabileceği netlikte yaz, mutfak terimini kullandığında kısaca açıkla. Gram/ml/°C/dakika kullan. Adımları mantıklı sırayla ve yeterli sayıda (genellikle 6-12 adım) ver.\n\nÇIKTI: SADECE geçerli JSON döndür. Başka metin yok, markdown yok, açıklama yok.\n\n{"name_original":"","name_tr":"","source":"","verified_by":"","verification_count":2,"category":"","difficulty":"","service_type":"","portions":10,"prep_time":"","total_time":"","ingredients":[{"name":"","amount":"","unit":""}],"fire_note":"","steps":[{"title":"","text":"","temp":"","duration":"","critical":""}],"techniques":[{"name":"","explanation":""}],"mise_en_place":[""],"plating":"","variations":"","food_safety":{"storage_temp":"","max_duration":"","service_temp":"","haccp_notes":""},"warnings":[""],"chef_note":"","local_alternatives":"","sources_full":[""]}';
 
 function $i(id){ return document.getElementById(id); }
 function sc(h){ $i('content').innerHTML = h; }
@@ -442,11 +452,11 @@ async function doSearch(){
     var model = $i('model-select').value;
     var body = {
       model: model,
-      // reasoner bütçesini akıl yürütme + cevap paylaşır; daha yüksek tut
-      max_tokens: model === 'deepseek-reasoner' ? 8000 : 4000,
+      // detaylı adımlar için yüksek bütçe; reasoner akıl yürütme + cevabı paylaşır
+      max_tokens: model === 'deepseek-reasoner' ? 8000 : 6000,
       messages: [
         { role: 'system', content: SYS },
-        { role: 'user', content: '"' + q + '" tarifi. 10 porsiyon. Sadece JSON döndür.' }
+        { role: 'user', content: '"' + q + '" tarifi. 10 porsiyon için. Yapılışını adım adım, detaylı ve anlaşılır anlat; oran, sıcaklık ve süreleri klasik kaynaklarla doğrula. Sadece JSON döndür.' }
       ]
     };
     // deepseek-reasoner JSON output modunu desteklemez; sadece deepseek-chat'te aç
@@ -583,7 +593,7 @@ function render(r, keep){
     +   '<div class="abtns">'
     +     '<button class="abtn'+(isSaved?' saved':'')+ '" id="save-btn" onclick="toggleSave()">'+(isSaved?'✓ Kaydedildi':'+ Kaydet')+'</button>'
     +     '<button class="abtn" id="copy-btn" onclick="copyRecipe()">⧉ Kopyala</button>'
-    +     '<button class="abtn pdf" onclick="exportPDF()">↓ PDF</button>'
+    +     '<button class="abtn pdf" onclick="exportPDF()">🖨 PDF</button>'
     +   '</div>'
     + '</div>'
 
@@ -702,7 +712,7 @@ function exportPDF(){
   var r = current;
   var fs = r.food_safety || {};
 
-  var css = 'body{font-family:Georgia,serif;color:#111;max-width:760px;margin:32px auto;padding:0 32px;font-size:13px;}h1{font-size:25px;margin-bottom:3px;border-bottom:2px solid #c9a96e;padding-bottom:8px;}h2{font-size:13px;color:#777;font-weight:normal;margin-bottom:16px;}.meta{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;}.meta span{background:#f5f0e8;padding:3px 9px;border-radius:4px;font-size:11px;}.src{background:#faf7f0;border-left:3px solid #c9a96e;padding:7px 12px;margin-bottom:20px;font-size:11.5px;color:#666;}.sec{font-size:10px;font-weight:bold;letter-spacing:.1em;text-transform:uppercase;color:#aaa;margin:20px 0 7px;border-bottom:1px solid #eee;padding-bottom:3px;}.ing{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f5f0e8;font-size:12.5px;}.ia{color:#c9a96e;font-family:monospace;}.step{display:flex;gap:11px;margin-bottom:14px;}.sn{width:23px;height:23px;min-width:23px;border-radius:50%;background:#f5f0e8;border:1px solid #c9a96e;display:flex;align-items:center;justify-content:center;font-size:11px;color:#c9a96e;font-family:monospace;font-weight:bold;}.sh{font-size:11.5px;font-weight:bold;color:#c9a96e;margin-bottom:3px;}.st{font-size:12.5px;line-height:1.65;}.tags{display:flex;gap:6px;margin-top:4px;flex-wrap:wrap;}.tag{font-size:10.5px;padding:2px 7px;border-radius:3px;font-family:monospace;}.tt{background:#eaf3fb;color:#185FA5;}.td{background:#faf3e8;color:#c9a96e;}.tc{background:#fceaea;color:#a32d2d;}.sg{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:7px;}.si{background:#f9f9f9;padding:8px 10px;border-radius:5px;}.sl{font-size:9.5px;color:#aaa;text-transform:uppercase;letter-spacing:.07em;}.sv{font-size:13px;font-weight:bold;font-family:monospace;color:#2d7a4a;}.w{background:#fceaea;border-left:3px solid #e24b4a;padding:7px 11px;margin:5px 0;font-size:12px;color:#a32d2d;border-radius:0 4px 4px 0;}.tech{padding:7px 10px;background:#f9f9f9;border-left:2px solid #c9a96e;margin-bottom:6px;}.tn{font-size:11.5px;font-weight:bold;color:#c9a96e;}.te{font-size:12px;color:#666;line-height:1.5;}.cn{background:#faf7f0;border:1px solid #e8d9b5;border-radius:7px;padding:12px 14px;font-size:12.5px;color:#666;font-style:italic;line-height:1.65;}.mi{font-size:12.5px;padding:4px 0;border-bottom:1px solid #f0ede6;}.mi::before{content:"◆ ";color:#c9a96e;font-size:9px;}.sri{font-size:11px;color:#888;font-family:monospace;padding:4px 0;border-bottom:1px solid #f0ede6;}footer{font-size:10px;color:#ccc;text-align:center;margin-top:32px;border-top:1px solid #eee;padding-top:9px;}@media print{body{margin:0;}}';
+  var css = 'body{font-family:Georgia,serif;color:#111;max-width:760px;margin:32px auto;padding:0 32px;font-size:13px;}h1{font-size:25px;margin-bottom:3px;border-bottom:2px solid #c9a96e;padding-bottom:8px;}h2{font-size:13px;color:#777;font-weight:normal;margin-bottom:16px;}.meta{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;}.meta span{background:#f5f0e8;padding:3px 9px;border-radius:4px;font-size:11px;}.src{background:#faf7f0;border-left:3px solid #c9a96e;padding:7px 12px;margin-bottom:20px;font-size:11.5px;color:#666;}.sec{font-size:10px;font-weight:bold;letter-spacing:.1em;text-transform:uppercase;color:#aaa;margin:20px 0 7px;border-bottom:1px solid #eee;padding-bottom:3px;}.ing{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f5f0e8;font-size:12.5px;}.ia{color:#c9a96e;font-family:monospace;}.step{display:flex;gap:11px;margin-bottom:14px;}.sn{width:23px;height:23px;min-width:23px;border-radius:50%;background:#f5f0e8;border:1px solid #c9a96e;display:flex;align-items:center;justify-content:center;font-size:11px;color:#c9a96e;font-family:monospace;font-weight:bold;}.sh{font-size:11.5px;font-weight:bold;color:#c9a96e;margin-bottom:3px;}.st{font-size:12.5px;line-height:1.65;}.tags{display:flex;gap:6px;margin-top:4px;flex-wrap:wrap;}.tag{font-size:10.5px;padding:2px 7px;border-radius:3px;font-family:monospace;}.tt{background:#eaf3fb;color:#185FA5;}.td{background:#faf3e8;color:#c9a96e;}.tc{background:#fceaea;color:#a32d2d;}.sg{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:7px;}.si{background:#f9f9f9;padding:8px 10px;border-radius:5px;}.sl{font-size:9.5px;color:#aaa;text-transform:uppercase;letter-spacing:.07em;}.sv{font-size:13px;font-weight:bold;font-family:monospace;color:#2d7a4a;}.w{background:#fceaea;border-left:3px solid #e24b4a;padding:7px 11px;margin:5px 0;font-size:12px;color:#a32d2d;border-radius:0 4px 4px 0;}.tech{padding:7px 10px;background:#f9f9f9;border-left:2px solid #c9a96e;margin-bottom:6px;}.tn{font-size:11.5px;font-weight:bold;color:#c9a96e;}.te{font-size:12px;color:#666;line-height:1.5;}.cn{background:#faf7f0;border:1px solid #e8d9b5;border-radius:7px;padding:12px 14px;font-size:12.5px;color:#666;font-style:italic;line-height:1.65;}.mi{font-size:12.5px;padding:4px 0;border-bottom:1px solid #f0ede6;}.mi::before{content:"◆ ";color:#c9a96e;font-size:9px;}.sri{font-size:11px;color:#888;font-family:monospace;padding:4px 0;border-bottom:1px solid #f0ede6;}footer{font-size:10px;color:#ccc;text-align:center;margin-top:32px;border-top:1px solid #eee;padding-top:9px;}@media print{body{margin:0;}}@page{margin:14mm;}';
 
   var ratio = viewPortions / (basePortions || 1);
 
@@ -732,15 +742,18 @@ function exportPDF(){
     + '<footer>Garde Manger — Profesyonel Soğuk Mutfak Rehberi</footer>'
     + '</body></html>';
 
-  var blob = new Blob([html], {type:'text/html;charset=utf-8'});
-  var url  = URL.createObjectURL(blob);
-  var a    = document.createElement('a');
-  a.href = url;
-  a.download = (r.name_original||'tarif').replace(/\s+/g,'_') + '.html';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+  // Yazdır penceresi aç → kullanıcı "PDF olarak kaydet" seçer (iOS dahil her yerde çalışır)
+  var printHtml = html.replace('</body></html>',
+    '<scr' + 'ipt>window.onload=function(){setTimeout(function(){try{window.focus();window.print();}catch(e){}},400);};</scr' + 'ipt></body></html>');
+
+  var w = window.open('', '_blank');
+  if(!w){
+    alert('PDF oluşturmak için açılır pencereye (pop-up) izin ver, sonra tekrar dene.\n\nAçılan sayfada Yazdır → "PDF olarak kaydet" seç.');
+    return;
+  }
+  w.document.open();
+  w.document.write(printHtml);
+  w.document.close();
 }
 
 
