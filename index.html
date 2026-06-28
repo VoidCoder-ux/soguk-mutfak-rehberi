@@ -3,7 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Profesyonel soğuk mutfak (garde manger) tarif asistanı — Escoffier, Larousse ve CIA kaynaklarına dayalı, DeepSeek API ile çalışır.">
 <title>Garde Manger — Soğuk Mutfak Rehberi</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🔪%3C/text%3E%3C/svg%3E">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -30,7 +32,7 @@ header{padding:15px 22px;border-bottom:1px solid var(--border);display:flex;alig
 #model-select{background:transparent;border:none;color:var(--gold);font-size:12px;font-family:'DM Mono',monospace;cursor:pointer;outline:none;}
 #model-select option{background:#1e1e1a;}
 
-.layout{display:flex;flex:1;height:calc(100vh - 56px);}
+.layout{display:flex;flex:1;min-height:0;}
 
 aside{width:238px;min-width:238px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
 .nav-wrap{padding:13px 13px 7px;}
@@ -150,7 +152,35 @@ main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
 
 .src-item{font-size:12px;color:var(--text3);font-family:'DM Mono',monospace;padding:7px 11px;background:var(--bg3);border-radius:6px;border-left:2px solid var(--gold);line-height:1.5;margin-bottom:6px;}
 
-@media(max-width:768px){aside{display:none;}.grid{grid-template-columns:1fr;}.sgrid{grid-template-columns:1fr;}}
+/* Hamburger + mobil çekmece */
+.menu-btn{display:none;background:var(--bg3);border:1px solid var(--border2);color:var(--text2);border-radius:var(--rs);font-size:18px;line-height:1;width:38px;height:34px;cursor:pointer;flex-shrink:0;}
+.menu-btn:hover{border-color:var(--gold);color:var(--gold);}
+.backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:90;display:none;}
+.backdrop.show{display:block;}
+.nav-lbl-row{display:flex;align-items:center;justify-content:space-between;padding:0 21px;margin-top:6px;}
+.clear-link{font-size:10px;color:var(--text3);cursor:pointer;text-transform:uppercase;letter-spacing:.06em;}
+.clear-link:hover{color:var(--gold);}
+.ri-row{display:flex;align-items:center;gap:4px;}
+.ri-row .ri{flex:1;min-width:0;}
+.ri-x{color:var(--text3);font-size:14px;cursor:pointer;padding:0 6px;border-radius:6px;flex-shrink:0;}
+.ri-x:hover{color:var(--red);background:var(--bg3);}
+.port-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.port-btn{width:26px;height:26px;border-radius:6px;border:1px solid var(--border2);background:var(--bg3);color:var(--gold);font-size:16px;line-height:1;cursor:pointer;}
+.port-btn:hover{border-color:var(--gold);}
+.port-val{font-size:12px;color:var(--text2);font-family:'DM Mono',monospace;}
+.port-reset{font-size:10px;color:var(--text3);cursor:pointer;margin-left:4px;}
+.port-reset:hover{color:var(--gold);}
+.saved-card{position:relative;}
+.saved-x{position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:6px;border:1px solid var(--border2);background:var(--bg3);color:var(--text3);font-size:13px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.saved-x:hover{color:var(--red);border-color:var(--red);}
+.abtn.copied{border-color:rgba(126,200,150,.4);color:var(--green);background:var(--green-bg);}
+@media(max-width:768px){
+  .menu-btn{display:block;}
+  aside{position:fixed;top:0;left:0;bottom:0;z-index:95;transform:translateX(-100%);transition:transform .25s ease;box-shadow:0 0 40px rgba(0,0,0,.5);}
+  aside.open{transform:translateX(0);}
+  .grid{grid-template-columns:1fr;}
+  .sgrid{grid-template-columns:1fr;}
+}
 
 /* API KEY MODAL */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
@@ -178,6 +208,7 @@ main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
 <body>
 
 <header>
+  <button class="menu-btn" id="menu-btn" onclick="toggleMenu()" aria-label="Menüyü aç/kapat">☰</button>
   <div class="logo">
     <div class="logo-icon">🔪</div>
     <div>
@@ -211,7 +242,10 @@ main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
       </div>
     </div>
     <div class="div"></div>
-    <div class="nav-lbl" style="padding:0 21px;margin-top:6px">Son Aramalar</div>
+    <div class="nav-lbl-row">
+      <span class="nav-lbl" style="padding:0">Son Aramalar</span>
+      <span class="clear-link" id="clear-recent" onclick="clearRecent()">Temizle</span>
+    </div>
     <div class="recent-list" id="recent-list"></div>
   </aside>
 
@@ -249,23 +283,70 @@ main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
     </div>
   </main>
 </div>
+<div class="backdrop" id="backdrop" onclick="closeMenu()"></div>
 
 <script>
 var saved   = JSON.parse(localStorage.getItem('gm_saved')  || '[]');
 var recent  = JSON.parse(localStorage.getItem('gm_recent') || '[]');
 var current = null;
+var gmController = null;        // aktif isteği iptal etmek için
+var basePortions = 10;         // tarifin orijinal porsiyonu
+var viewPortions = 10;         // ekranda gösterilen (ölçeklenmiş) porsiyon
 
 var SYS = 'Sen profesyonel bir soğuk mutfak (garde manger) asistanısın. Kullanıcın Türkiye\'de deneyimli bir soğuk şef.\n\nKAYNAK HİYERARŞİSİ: Escoffier Le Guide Culinaire, Larousse Gastronomique, The Professional Chef (CIA), Le Cordon Bleu, Michelin yıldızlı şef yayınları, ACF standartları. EV TİPİ BİLGİ KULLANMA.\n\nHer adımda: nasıl yapılır (teknik hareket) + kontrol noktası + yaygın hata. 2-3 cümle yeterli. Gram/ml/°C kullan.\n\nSADECE geçerli JSON döndür. Başka metin yok, markdown yok.\n\n{"name_original":"","name_tr":"","source":"","verified_by":"","verification_count":2,"category":"","difficulty":"","service_type":"","portions":10,"prep_time":"","total_time":"","ingredients":[{"name":"","amount":"","unit":""}],"fire_note":"","steps":[{"title":"","text":"","temp":"","duration":"","critical":""}],"techniques":[{"name":"","explanation":""}],"mise_en_place":[""],"plating":"","variations":"","food_safety":{"storage_temp":"","max_duration":"","service_temp":"","haccp_notes":""},"warnings":[""],"chef_note":"","local_alternatives":"","sources_full":[""]}';
 
 function $i(id){ return document.getElementById(id); }
 function sc(h){ $i('content').innerHTML = h; }
-function qs(q){ $i('q').value = q; doSearch(); }
+function qs(q){ $i('q').value = q; closeMenu(); doSearch(); }
 function updateCount(){ $i('saved-count').textContent = saved.length; }
 
+// HTML kaçış — model/kullanıcı çıktısı DOM'a basılmadan önce
+function esc(s){
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+// 0 dahil geçerli değeri koru, boş/null ise varsayılan
+function val(v, d){ return (v == null || v === '') ? d : v; }
+
+// Mobil çekmece
+function toggleMenu(){
+  var a = document.querySelector('aside');
+  a.classList.toggle('open');
+  $i('backdrop').classList.toggle('show', a.classList.contains('open'));
+}
+function closeMenu(){
+  document.querySelector('aside').classList.remove('open');
+  $i('backdrop').classList.remove('show');
+}
+
 function updateRecent(){
-  $i('recent-list').innerHTML = recent.length
-    ? recent.map(function(r){ return '<div class="ri" onclick="qs(\''+r.replace(/'/g,"\\'")+'\')">'+ r +'</div>'; }).join('')
-    : '<div style="padding:9px 10px;font-size:12px;color:var(--text3)">Henüz arama yok</div>';
+  var list = $i('recent-list');
+  list.innerHTML = '';
+  if(!recent.length){
+    var e = document.createElement('div');
+    e.style.cssText = 'padding:9px 10px;font-size:12px;color:var(--text3)';
+    e.textContent = 'Henüz arama yok';
+    list.appendChild(e);
+    return;
+  }
+  recent.forEach(function(r){
+    var row = document.createElement('div');
+    row.className = 'ri-row';
+    var item = document.createElement('div');
+    item.className = 'ri';
+    item.textContent = r;            // textContent → enjeksiyon yok
+    item.title = r;
+    item.onclick = function(){ qs(r); };
+    var x = document.createElement('span');
+    x.className = 'ri-x';
+    x.textContent = '×';
+    x.title = 'Kaldır';
+    x.onclick = function(ev){ ev.stopPropagation(); removeRecent(r); };
+    row.appendChild(item);
+    row.appendChild(x);
+    list.appendChild(row);
+  });
 }
 
 function addRecent(q){
@@ -274,7 +355,22 @@ function addRecent(q){
   updateRecent();
 }
 
+function removeRecent(q){
+  recent = recent.filter(function(r){ return r !== q; });
+  localStorage.setItem('gm_recent', JSON.stringify(recent));
+  updateRecent();
+}
+
+function clearRecent(){
+  if(!recent.length) return;
+  if(!confirm('Tüm arama geçmişi silinsin mi?')) return;
+  recent = [];
+  localStorage.setItem('gm_recent', JSON.stringify(recent));
+  updateRecent();
+}
+
 function showSearch(){
+  closeMenu();
   $i('nav-search').classList.add('active');
   $i('nav-saved').classList.remove('active');
   if(current){ render(current); }
@@ -282,6 +378,7 @@ function showSearch(){
 }
 
 function showSaved(){
+  closeMenu();
   $i('nav-saved').classList.add('active');
   $i('nav-search').classList.remove('active');
   if(!saved.length){
@@ -291,13 +388,22 @@ function showSaved(){
   sc('<div style="margin-bottom:16px"><div style="font-family:\'Playfair Display\',serif;font-size:20px;margin-bottom:3px">'+saved.length+' Kayıtlı Tarif</div></div>'
     + '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px">'
     + saved.map(function(r,i){
-        return '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:13px 15px;cursor:pointer" onclick="loadSaved('+i+')">'
-          + '<div style="font-size:13.5px;font-weight:500;margin-bottom:3px">'+r.name_original+'</div>'
-          + '<div style="font-size:11.5px;color:var(--text3);margin-bottom:9px">'+r.name_tr+'</div>'
-          + '<span style="font-size:11px;padding:2px 9px;border-radius:99px;background:var(--gold-bg);color:var(--gold);border:1px solid rgba(201,169,110,.2)">'+(r.category||'')+'</span>'
+        return '<div class="saved-card" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:13px 15px;cursor:pointer" onclick="loadSaved('+i+')">'
+          + '<button class="saved-x" title="Sil" onclick="event.stopPropagation();deleteSaved('+i+')">×</button>'
+          + '<div style="font-size:13.5px;font-weight:500;margin-bottom:3px;padding-right:22px">'+esc(r.name_original)+'</div>'
+          + '<div style="font-size:11.5px;color:var(--text3);margin-bottom:9px">'+esc(r.name_tr)+'</div>'
+          + '<span style="font-size:11px;padding:2px 9px;border-radius:99px;background:var(--gold-bg);color:var(--gold);border:1px solid rgba(201,169,110,.2)">'+esc(r.category||'')+'</span>'
           + '</div>';
       }).join('')
     + '</div>');
+}
+
+function deleteSaved(i){
+  if(!confirm('"'+(saved[i] && saved[i].name_original || 'Bu tarif')+'" kayıtlardan silinsin mi?')) return;
+  saved.splice(i, 1);
+  localStorage.setItem('gm_saved', JSON.stringify(saved));
+  updateCount();
+  showSaved();
 }
 
 function loadSaved(i){ current = saved[i]; showSearch(); }
@@ -317,7 +423,9 @@ async function doSearch(){
     + '<div class="ls" id="l2">🔬 Teknik adımlar hazırlanıyor...</div>'
     + '<div class="ls" id="l3">✓ HACCP kontrolü yapılıyor...</div>'
     + '<div class="ls" id="l4">🍽 Tarif kartı oluşturuluyor...</div>'
-    + '</div></div>');
+    + '</div>'
+    + '<button class="abtn" onclick="cancelSearch()">✕ İptal</button>'
+    + '</div>');
 
   var si = 1;
   var timer = setInterval(function(){
@@ -327,11 +435,15 @@ async function doSearch(){
     if(si > 4) clearInterval(timer);
   }, 1500);
 
+  gmController = new AbortController();
+  var timeout = setTimeout(function(){ if(gmController) gmController.abort(); }, 150000); // 150 sn
+
   try {
     var model = $i('model-select').value;
     var body = {
       model: model,
-      max_tokens: 4000,
+      // reasoner bütçesini akıl yürütme + cevap paylaşır; daha yüksek tut
+      max_tokens: model === 'deepseek-reasoner' ? 8000 : 4000,
       messages: [
         { role: 'system', content: SYS },
         { role: 'user', content: '"' + q + '" tarifi. 10 porsiyon. Sadece JSON döndür.' }
@@ -345,9 +457,11 @@ async function doSearch(){
         'Content-Type': 'application/json',
         'Authorization': 'Bearer ' + API_KEY
       },
-      body: JSON.stringify(body)
+      body: JSON.stringify(body),
+      signal: gmController.signal
     });
 
+    clearTimeout(timeout);
     clearInterval(timer);
     for(var x=1;x<=4;x++){ var el=$i('l'+x); if(el){el.classList.remove('active');el.classList.add('done');} }
 
@@ -358,6 +472,9 @@ async function doSearch(){
 
     var data = await res.json();
     var text = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '';
+    if(!text.trim()){
+      throw new Error('Model boş yanıt döndürdü. ' + (model === 'deepseek-reasoner' ? 'deepseek-reasoner uzun düşünebilir; tekrar deneyin veya deepseek-chat kullanın.' : 'Tekrar deneyin.'));
+    }
 
     // JSON çıkar
     var jsonStr = text;
@@ -380,47 +497,81 @@ async function doSearch(){
     render(recipe);
 
   } catch(err){
+    clearTimeout(timeout);
     clearInterval(timer);
-    sc('<div class="ebox"><div class="eico">⚠️</div><div class="etit">Arama Hatası</div><div class="edesc">'+err.message+'<br><br>Lütfen tekrar deneyin.</div></div>');
+    if(err && err.name === 'AbortError'){
+      sc('<div class="ebox"><div class="eico">✕</div><div class="etit">İptal edildi</div><div class="edesc">Arama durduruldu.</div></div>');
+    } else {
+      sc('<div class="ebox"><div class="eico">⚠️</div><div class="etit">Arama Hatası</div><div class="edesc">'+esc(err.message)+'<br><br>Lütfen tekrar deneyin.</div></div>');
+    }
   }
 
+  gmController = null;
   btn.disabled = false; btn.textContent = 'Ara';
 }
 
-function render(r){
+function cancelSearch(){ if(gmController) gmController.abort(); }
+
+// ── Porsiyon ölçekleme ──────────────────────────────────
+function parseNum(a){
+  if(a == null) return null;
+  var s = String(a).trim().replace(',', '.');
+  var fr = s.match(/^(\d+)\s*\/\s*(\d+)/);
+  if(fr){ var d = parseFloat(fr[2]); return d ? parseFloat(fr[1]) / d : null; }
+  var m = s.match(/^\d*\.?\d+/);
+  return m ? parseFloat(m[0]) : null;
+}
+function scaleAmount(a, ratio){
+  var s = String(a == null ? '' : a);
+  if(ratio === 1) return s;
+  var n = parseNum(s);
+  if(n == null) return s;                       // sayısal değilse dokunma
+  var out = Math.round(n * ratio * 100) / 100;  // 2 ondalık
+  return s.replace(/^(\s*)(\d+\s*\/\s*\d+|\d*[.,]?\d+)/, '$1' + out);
+}
+function setPortions(n){ if(n < 1) n = 1; viewPortions = n; render(current, true); }
+function resetPortions(){ viewPortions = basePortions; render(current, true); }
+
+function render(r, keep){
+  if(!r) return;
   var isSaved = saved.some(function(s){ return s.name_original === r.name_original; });
 
+  basePortions = Number(val(r.portions, 10)) || 10;
+  if(!keep) viewPortions = basePortions;
+  var ratio = viewPortions / basePortions;
+  var scaled = viewPortions !== basePortions;
+
   var ings = (r.ingredients||[]).map(function(i){
-    return '<div class="ing"><span>'+i.name+'</span><span class="ia">'+i.amount+' '+(i.unit||'')+'</span></div>';
+    return '<div class="ing"><span>'+esc(i.name)+'</span><span class="ia">'+esc(scaleAmount(i.amount, ratio))+' '+esc(i.unit||'')+'</span></div>';
   }).join('');
 
   var steps = (r.steps||[]).map(function(s,i){
     return '<div class="step">'
       + '<div class="snum">'+(i+1)+'</div>'
       + '<div class="sbody">'
-      + (s.title ? '<div class="shead">'+s.title+'</div>' : '')
-      + '<div class="stxt">'+s.text+'</div>'
+      + (s.title ? '<div class="shead">'+esc(s.title)+'</div>' : '')
+      + '<div class="stxt">'+esc(s.text)+'</div>'
       + '<div class="stags">'
-      + (s.temp     ? '<span class="stag st">🌡 '+s.temp+'</span>' : '')
-      + (s.duration ? '<span class="stag sd">⏱ '+s.duration+'</span>' : '')
-      + (s.critical ? '<span class="stag sc">⚠ '+s.critical+'</span>' : '')
+      + (s.temp     ? '<span class="stag st">🌡 '+esc(s.temp)+'</span>' : '')
+      + (s.duration ? '<span class="stag sd">⏱ '+esc(s.duration)+'</span>' : '')
+      + (s.critical ? '<span class="stag sc">⚠ '+esc(s.critical)+'</span>' : '')
       + '</div></div></div>';
   }).join('');
 
   var mise = (r.mise_en_place||[]).filter(Boolean).map(function(m){
-    return '<div class="mise-item">'+m+'</div>';
+    return '<div class="mise-item">'+esc(m)+'</div>';
   }).join('');
 
   var techs = (r.techniques||[]).filter(function(t){ return t.name; }).map(function(t){
-    return '<div class="tech"><div class="tname">'+t.name+'</div><div class="texp">'+t.explanation+'</div></div>';
+    return '<div class="tech"><div class="tname">'+esc(t.name)+'</div><div class="texp">'+esc(t.explanation)+'</div></div>';
   }).join('');
 
   var warns = (r.warnings||[]).filter(Boolean).map(function(w){
-    return '<div class="warn">⚠ '+w+'</div>';
+    return '<div class="warn">⚠ '+esc(w)+'</div>';
   }).join('');
 
   var srcs = (r.sources_full||[]).filter(Boolean).map(function(s){
-    return '<div class="src-item">'+s+'</div>';
+    return '<div class="src-item">'+esc(s)+'</div>';
   }).join('');
 
   var fs = r.food_safety || {};
@@ -428,39 +579,47 @@ function render(r){
   sc('<div class="recipe">'
 
     + '<div class="title-row">'
-    +   '<div><div class="rtitle">'+(r.name_original||'')+'</div><div class="rtitle-tr">'+(r.name_tr||'')+'</div></div>'
+    +   '<div><div class="rtitle">'+esc(r.name_original||'')+'</div><div class="rtitle-tr">'+esc(r.name_tr||'')+'</div></div>'
     +   '<div class="abtns">'
     +     '<button class="abtn'+(isSaved?' saved':'')+ '" id="save-btn" onclick="toggleSave()">'+(isSaved?'✓ Kaydedildi':'+ Kaydet')+'</button>'
+    +     '<button class="abtn" id="copy-btn" onclick="copyRecipe()">⧉ Kopyala</button>'
     +     '<button class="abtn pdf" onclick="exportPDF()">↓ PDF</button>'
     +   '</div>'
     + '</div>'
 
     + '<div class="mrow">'
-    +   '<span class="pill g">📂 '+(r.category||'')+'</span>'
-    +   '<span class="pill">'+(r.difficulty||'')+'</span>'
-    +   '<span class="pill">'+(r.service_type||'')+'</span>'
-    +   '<span class="pill b">⏱ '+(r.total_time||'')+'</span>'
-    +   '<span class="pill gr">👥 '+(r.portions||10)+' porsiyon</span>'
+    +   '<span class="pill g">📂 '+esc(r.category||'')+'</span>'
+    +   '<span class="pill">'+esc(r.difficulty||'')+'</span>'
+    +   '<span class="pill">'+esc(r.service_type||'')+'</span>'
+    +   '<span class="pill b">⏱ '+esc(r.total_time||'')+'</span>'
+    +   '<span class="pill gr">👥 '+viewPortions+' porsiyon</span>'
     + '</div>'
 
     + '<div class="srcbar">'
-    +   '<div><div class="sl">Kaynak</div><div class="sv">'+(r.source||'')+'</div></div>'
-    +   '<div class="vbadge">✓ '+(r.verification_count||2)+' kaynak doğruladı</div>'
+    +   '<div><div class="sl">Kaynak</div><div class="sv">'+esc(r.source||'')+'</div></div>'
+    +   '<div class="vbadge">✓ '+esc(val(r.verification_count, 2))+' kaynak doğruladı</div>'
     + '</div>'
 
     + '<div class="grid">'
     +   '<div class="card">'
-    +     '<div class="ctitle">Malzemeler ('+(r.portions||10)+' porsiyon)</div>'
+    +     '<div class="ctitle">Malzemeler</div>'
+    +     '<div class="port-row">'
+    +       '<button class="port-btn" onclick="setPortions(viewPortions-1)" aria-label="Azalt">−</button>'
+    +       '<span class="port-val">'+viewPortions+' porsiyon</span>'
+    +       '<button class="port-btn" onclick="setPortions(viewPortions+1)" aria-label="Artır">+</button>'
+    +       (scaled ? '<span class="port-reset" onclick="resetPortions()">↺ sıfırla ('+basePortions+')</span>' : '')
+    +     '</div>'
     +     ings
-    +     (r.fire_note ? '<div class="fn">📝 '+r.fire_note+'</div>' : '')
+    +     (scaled ? '<div class="fn">⚠ Miktarlar '+basePortions+'→'+viewPortions+' porsiyona göre otomatik ölçeklendi (yaklaşık).</div>' : '')
+    +     (r.fire_note ? '<div class="fn">📝 '+esc(r.fire_note)+'</div>' : '')
     +   '</div>'
     +   '<div class="card">'
     +     '<div class="ctitle">Gıda Güvenliği — HACCP</div>'
     +     '<div class="sgrid">'
-    +       '<div class="sitem"><div class="slbl">Saklama</div><div class="sval">'+(fs.storage_temp||'—')+'</div></div>'
-    +       '<div class="sitem"><div class="slbl">Maks. Süre</div><div class="sval n">'+(fs.max_duration||'—')+'</div></div>'
-    +       '<div class="sitem"><div class="slbl">Servis</div><div class="sval">'+(fs.service_temp||'—')+'</div></div>'
-    +       '<div class="sitem"><div class="slbl">HACCP Notu</div><div class="sval sm">'+(fs.haccp_notes||'—')+'</div></div>'
+    +       '<div class="sitem"><div class="slbl">Saklama</div><div class="sval">'+esc(fs.storage_temp||'—')+'</div></div>'
+    +       '<div class="sitem"><div class="slbl">Maks. Süre</div><div class="sval n">'+esc(fs.max_duration||'—')+'</div></div>'
+    +       '<div class="sitem"><div class="slbl">Servis</div><div class="sval">'+esc(fs.service_temp||'—')+'</div></div>'
+    +       '<div class="sitem"><div class="slbl">HACCP Notu</div><div class="sval sm">'+esc(fs.haccp_notes||'—')+'</div></div>'
     +     '</div>'
     +     warns
     +   '</div>'
@@ -472,15 +631,55 @@ function render(r){
 
     + (techs ? '<div class="card full" style="margin-bottom:11px"><div class="ctitle">Kullanılan Teknikler</div>'+techs+'</div>' : '')
 
-    + (r.plating ? '<div class="card full" style="margin-bottom:11px;border-left:2px solid var(--gold)"><div class="ctitle">Tabak Sunumu & Plating</div><div style="font-size:13.5px;line-height:1.7">'+r.plating+'</div></div>' : '')
+    + (r.plating ? '<div class="card full" style="margin-bottom:11px;border-left:2px solid var(--gold)"><div class="ctitle">Tabak Sunumu & Plating</div><div style="font-size:13.5px;line-height:1.7">'+esc(r.plating)+'</div></div>' : '')
 
-    + (r.variations ? '<div class="card full" style="margin-bottom:11px"><div class="ctitle">Varyasyonlar</div><div style="font-size:13.5px;color:var(--text2);line-height:1.7">'+r.variations+'</div></div>' : '')
+    + (r.variations ? '<div class="card full" style="margin-bottom:11px"><div class="ctitle">Varyasyonlar</div><div style="font-size:13.5px;color:var(--text2);line-height:1.7">'+esc(r.variations)+'</div></div>' : '')
 
-    + (r.chef_note ? '<div class="cnote"><div class="clbl">Şef Notu</div>'+r.chef_note+(r.local_alternatives ? '<div class="alt">🇹🇷 Türkiye Alternatifi: '+r.local_alternatives+'</div>' : '')+'</div>' : '')
+    + (r.chef_note ? '<div class="cnote"><div class="clbl">Şef Notu</div>'+esc(r.chef_note)+(r.local_alternatives ? '<div class="alt">🇹🇷 Türkiye Alternatifi: '+esc(r.local_alternatives)+'</div>' : '')+'</div>' : '')
 
     + (srcs ? '<div class="card full"><div class="ctitle">Kaynaklar</div>'+srcs+'</div>' : '')
 
   + '</div>');
+}
+
+// ── Panoya kopyala ──────────────────────────────────────
+function recipeToText(r){
+  var ratio = viewPortions / (basePortions || 1);
+  var L = [];
+  L.push((r.name_original||'') + (r.name_tr ? ' ('+r.name_tr+')' : ''));
+  if(r.source) L.push('Kaynak: ' + r.source);
+  L.push(viewPortions + ' porsiyon');
+  L.push('');
+  L.push('MALZEMELER');
+  (r.ingredients||[]).forEach(function(i){
+    L.push('- ' + (i.name||'') + ': ' + scaleAmount(i.amount, ratio) + ' ' + (i.unit||''));
+  });
+  L.push('');
+  L.push('ADIMLAR');
+  (r.steps||[]).forEach(function(s,i){
+    L.push((i+1) + '. ' + (s.title ? s.title + ' — ' : '') + (s.text||''));
+  });
+  if(r.chef_note){ L.push(''); L.push('ŞEF NOTU: ' + r.chef_note); }
+  return L.join('\n');
+}
+function copyRecipe(){
+  if(!current) return;
+  var txt = recipeToText(current);
+  var done = function(){
+    var b = $i('copy-btn');
+    if(b){ b.textContent = '✓ Kopyalandı'; b.classList.add('copied');
+      setTimeout(function(){ b.textContent = '⧉ Kopyala'; b.classList.remove('copied'); }, 1500); }
+  };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(done, function(){ fallbackCopy(txt); done(); });
+  } else { fallbackCopy(txt); done(); }
+}
+function fallbackCopy(txt){
+  var t = document.createElement('textarea');
+  t.value = txt; t.style.position = 'fixed'; t.style.opacity = '0';
+  document.body.appendChild(t); t.focus(); t.select();
+  try { document.execCommand('copy'); } catch(e) {}
+  document.body.removeChild(t);
 }
 
 function toggleSave(){
@@ -505,28 +704,30 @@ function exportPDF(){
 
   var css = 'body{font-family:Georgia,serif;color:#111;max-width:760px;margin:32px auto;padding:0 32px;font-size:13px;}h1{font-size:25px;margin-bottom:3px;border-bottom:2px solid #c9a96e;padding-bottom:8px;}h2{font-size:13px;color:#777;font-weight:normal;margin-bottom:16px;}.meta{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;}.meta span{background:#f5f0e8;padding:3px 9px;border-radius:4px;font-size:11px;}.src{background:#faf7f0;border-left:3px solid #c9a96e;padding:7px 12px;margin-bottom:20px;font-size:11.5px;color:#666;}.sec{font-size:10px;font-weight:bold;letter-spacing:.1em;text-transform:uppercase;color:#aaa;margin:20px 0 7px;border-bottom:1px solid #eee;padding-bottom:3px;}.ing{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f5f0e8;font-size:12.5px;}.ia{color:#c9a96e;font-family:monospace;}.step{display:flex;gap:11px;margin-bottom:14px;}.sn{width:23px;height:23px;min-width:23px;border-radius:50%;background:#f5f0e8;border:1px solid #c9a96e;display:flex;align-items:center;justify-content:center;font-size:11px;color:#c9a96e;font-family:monospace;font-weight:bold;}.sh{font-size:11.5px;font-weight:bold;color:#c9a96e;margin-bottom:3px;}.st{font-size:12.5px;line-height:1.65;}.tags{display:flex;gap:6px;margin-top:4px;flex-wrap:wrap;}.tag{font-size:10.5px;padding:2px 7px;border-radius:3px;font-family:monospace;}.tt{background:#eaf3fb;color:#185FA5;}.td{background:#faf3e8;color:#c9a96e;}.tc{background:#fceaea;color:#a32d2d;}.sg{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:7px;}.si{background:#f9f9f9;padding:8px 10px;border-radius:5px;}.sl{font-size:9.5px;color:#aaa;text-transform:uppercase;letter-spacing:.07em;}.sv{font-size:13px;font-weight:bold;font-family:monospace;color:#2d7a4a;}.w{background:#fceaea;border-left:3px solid #e24b4a;padding:7px 11px;margin:5px 0;font-size:12px;color:#a32d2d;border-radius:0 4px 4px 0;}.tech{padding:7px 10px;background:#f9f9f9;border-left:2px solid #c9a96e;margin-bottom:6px;}.tn{font-size:11.5px;font-weight:bold;color:#c9a96e;}.te{font-size:12px;color:#666;line-height:1.5;}.cn{background:#faf7f0;border:1px solid #e8d9b5;border-radius:7px;padding:12px 14px;font-size:12.5px;color:#666;font-style:italic;line-height:1.65;}.mi{font-size:12.5px;padding:4px 0;border-bottom:1px solid #f0ede6;}.mi::before{content:"◆ ";color:#c9a96e;font-size:9px;}.sri{font-size:11px;color:#888;font-family:monospace;padding:4px 0;border-bottom:1px solid #f0ede6;}footer{font-size:10px;color:#ccc;text-align:center;margin-top:32px;border-top:1px solid #eee;padding-top:9px;}@media print{body{margin:0;}}';
 
-  var ingH  = (r.ingredients||[]).map(function(i){ return '<div class="ing"><span>'+i.name+'</span><span class="ia">'+i.amount+' '+(i.unit||'')+'</span></div>'; }).join('');
-  var stepH = (r.steps||[]).map(function(s,i){ return '<div class="step"><div class="sn">'+(i+1)+'</div><div>'+(s.title?'<div class="sh">'+s.title+'</div>':'')+'<div class="st">'+s.text+'</div><div class="tags">'+(s.temp?'<span class="tag tt">🌡 '+s.temp+'</span>':'')+(s.duration?'<span class="tag td">⏱ '+s.duration+'</span>':'')+(s.critical?'<span class="tag tc">⚠ '+s.critical+'</span>':'')+'</div></div></div>'; }).join('');
-  var miseH = (r.mise_en_place||[]).filter(Boolean).map(function(m){ return '<div class="mi">'+m+'</div>'; }).join('');
-  var techH = (r.techniques||[]).filter(function(t){ return t.name; }).map(function(t){ return '<div class="tech"><div class="tn">'+t.name+'</div><div class="te">'+t.explanation+'</div></div>'; }).join('');
-  var warnH = (r.warnings||[]).filter(Boolean).map(function(w){ return '<div class="w">⚠ '+w+'</div>'; }).join('');
-  var srcH  = (r.sources_full||[]).filter(Boolean).map(function(s){ return '<div class="sri">'+s+'</div>'; }).join('');
+  var ratio = viewPortions / (basePortions || 1);
 
-  var html = '<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8"><title>'+r.name_original+'</title><style>'+css+'</style></head><body>'
-    + '<h1>'+r.name_original+'</h1><h2>'+(r.name_tr||'')+'</h2>'
-    + '<div class="meta"><span>📂 '+(r.category||'')+'</span><span>'+(r.difficulty||'')+'</span><span>'+(r.service_type||'')+'</span><span>⏱ '+(r.total_time||'')+'</span><span>👥 '+(r.portions||10)+' porsiyon</span></div>'
-    + '<div class="src"><strong>Kaynak:</strong> '+(r.source||'')+' | <strong>Doğrulama:</strong> '+(r.verification_count||2)+' kaynak</div>'
+  var ingH  = (r.ingredients||[]).map(function(i){ return '<div class="ing"><span>'+esc(i.name)+'</span><span class="ia">'+esc(scaleAmount(i.amount, ratio))+' '+esc(i.unit||'')+'</span></div>'; }).join('');
+  var stepH = (r.steps||[]).map(function(s,i){ return '<div class="step"><div class="sn">'+(i+1)+'</div><div>'+(s.title?'<div class="sh">'+esc(s.title)+'</div>':'')+'<div class="st">'+esc(s.text)+'</div><div class="tags">'+(s.temp?'<span class="tag tt">🌡 '+esc(s.temp)+'</span>':'')+(s.duration?'<span class="tag td">⏱ '+esc(s.duration)+'</span>':'')+(s.critical?'<span class="tag tc">⚠ '+esc(s.critical)+'</span>':'')+'</div></div></div>'; }).join('');
+  var miseH = (r.mise_en_place||[]).filter(Boolean).map(function(m){ return '<div class="mi">'+esc(m)+'</div>'; }).join('');
+  var techH = (r.techniques||[]).filter(function(t){ return t.name; }).map(function(t){ return '<div class="tech"><div class="tn">'+esc(t.name)+'</div><div class="te">'+esc(t.explanation)+'</div></div>'; }).join('');
+  var warnH = (r.warnings||[]).filter(Boolean).map(function(w){ return '<div class="w">⚠ '+esc(w)+'</div>'; }).join('');
+  var srcH  = (r.sources_full||[]).filter(Boolean).map(function(s){ return '<div class="sri">'+esc(s)+'</div>'; }).join('');
+
+  var html = '<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8"><title>'+esc(r.name_original)+'</title><style>'+css+'</style></head><body>'
+    + '<h1>'+esc(r.name_original)+'</h1><h2>'+esc(r.name_tr||'')+'</h2>'
+    + '<div class="meta"><span>📂 '+esc(r.category||'')+'</span><span>'+esc(r.difficulty||'')+'</span><span>'+esc(r.service_type||'')+'</span><span>⏱ '+esc(r.total_time||'')+'</span><span>👥 '+viewPortions+' porsiyon</span></div>'
+    + '<div class="src"><strong>Kaynak:</strong> '+esc(r.source||'')+' | <strong>Doğrulama:</strong> '+esc(val(r.verification_count, 2))+' kaynak</div>'
     + (miseH ? '<div class="sec">Mise en Place</div>'+miseH : '')
-    + '<div class="sec">Malzemeler ('+(r.portions||10)+' porsiyon)</div>'+ingH
-    + (r.fire_note ? '<p style="font-size:11px;color:#aaa;font-style:italic;margin-top:6px">📝 '+r.fire_note+'</p>' : '')
+    + '<div class="sec">Malzemeler ('+viewPortions+' porsiyon)</div>'+ingH
+    + (r.fire_note ? '<p style="font-size:11px;color:#aaa;font-style:italic;margin-top:6px">📝 '+esc(r.fire_note)+'</p>' : '')
     + '<div class="sec">Teknik Adımlar</div>'+stepH
     + (techH ? '<div class="sec">Kullanılan Teknikler</div>'+techH : '')
-    + (r.plating ? '<div class="sec">Tabak Sunumu</div><p style="font-size:12.5px;line-height:1.65">'+r.plating+'</p>' : '')
-    + (r.variations ? '<div class="sec">Varyasyonlar</div><p style="font-size:12.5px;color:#666;line-height:1.65">'+r.variations+'</p>' : '')
+    + (r.plating ? '<div class="sec">Tabak Sunumu</div><p style="font-size:12.5px;line-height:1.65">'+esc(r.plating)+'</p>' : '')
+    + (r.variations ? '<div class="sec">Varyasyonlar</div><p style="font-size:12.5px;color:#666;line-height:1.65">'+esc(r.variations)+'</p>' : '')
     + '<div class="sec">Gıda Güvenliği — HACCP</div>'
-    + '<div class="sg"><div class="si"><div class="sl">Saklama</div><div class="sv">'+(fs.storage_temp||'—')+'</div></div><div class="si"><div class="sl">Maks. Süre</div><div class="sv" style="color:#333">'+(fs.max_duration||'—')+'</div></div><div class="si"><div class="sl">Servis</div><div class="sv">'+(fs.service_temp||'—')+'</div></div><div class="si"><div class="sl">HACCP Notu</div><div style="font-size:11px;color:#666;margin-top:2px">'+(fs.haccp_notes||'—')+'</div></div></div>'
+    + '<div class="sg"><div class="si"><div class="sl">Saklama</div><div class="sv">'+esc(fs.storage_temp||'—')+'</div></div><div class="si"><div class="sl">Maks. Süre</div><div class="sv" style="color:#333">'+esc(fs.max_duration||'—')+'</div></div><div class="si"><div class="sl">Servis</div><div class="sv">'+esc(fs.service_temp||'—')+'</div></div><div class="si"><div class="sl">HACCP Notu</div><div style="font-size:11px;color:#666;margin-top:2px">'+esc(fs.haccp_notes||'—')+'</div></div></div>'
     + warnH
-    + (r.chef_note ? '<div class="sec">Şef Notu</div><div class="cn">'+r.chef_note+(r.local_alternatives?'<br><br><strong style="font-style:normal;color:#c9a96e">🇹🇷 Türkiye Alternatifi:</strong> '+r.local_alternatives:'')+'</div>' : '')
+    + (r.chef_note ? '<div class="sec">Şef Notu</div><div class="cn">'+esc(r.chef_note)+(r.local_alternatives?'<br><br><strong style="font-style:normal;color:#c9a96e">🇹🇷 Türkiye Alternatifi:</strong> '+esc(r.local_alternatives):'')+'</div>' : '')
     + (srcH ? '<div class="sec">Kaynaklar</div>'+srcH : '')
     + '<footer>Garde Manger — Profesyonel Soğuk Mutfak Rehberi</footer>'
     + '</body></html>';
@@ -596,7 +797,7 @@ updateKeyIndicator();
     <div class="modal-label">API Anahtarı</div>
     <input class="modal-input" id="key-input" type="password" placeholder="sk-..." autocomplete="off" spellcheck="false">
     <div class="modal-hint">
-      Anahtarını <a href="https://platform.deepseek.com/api_keys" target="_blank">platform.deepseek.com</a> adresinden alabilirsin.
+      Anahtarını <a href="https://platform.deepseek.com/api_keys" target="_blank" rel="noopener noreferrer">platform.deepseek.com</a> adresinden alabilirsin.
     </div>
     <div class="modal-btns">
       <button class="modal-cancel" id="key-cancel" onclick="closeKeyModal()">İptal</button>

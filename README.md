@@ -10,9 +10,19 @@ Escoffier, Larousse Gastronomique ve CIA gibi profesyonel kaynaklara dayalı, De
 3. Model seç (`deepseek-chat` hızlı/uygun, `deepseek-reasoner` daha derin akıl yürütür).
 4. Bir tarif ara (ör. "Somon Gravlax"). Sonuçları kaydedebilir veya PDF/HTML olarak dışa aktarabilirsin.
 
+## Özellikler
+
+- Tarif kaydetme, kayıtlardan silme, son aramalar (tek tek kaldırma + tümünü temizleme)
+- **Porsiyon ölçekleme** — malzeme miktarlarını otomatik yeniden hesaplar (yaklaşık)
+- Panoya kopyala ve PDF/HTML dışa aktarma
+- İstek **iptali** (uzun süren `deepseek-reasoner` sorguları için) ve zaman aşımı
+- Mobil uyumlu: kenar menüsü hamburger (☰) ile açılır
+
 ## Güvenlik notu
 
-API anahtarın **yalnızca senin tarayıcında** (`localStorage`) saklanır; hiçbir sunucuya gönderilmez ve repoya yazılmaz. Tarayıcıdan doğrudan DeepSeek API'sine istek atılır.
+- API anahtarın **yalnızca senin tarayıcında** (`localStorage`) saklanır; hiçbir sunucuya gönderilmez ve repoya yazılmaz. Tarayıcıdan doğrudan DeepSeek API'sine istek atılır.
+- Model ve kullanıcı çıktısı DOM'a basılmadan önce **HTML-escape** edilir (XSS koruması).
+- `localStorage`'daki anahtar, aynı origin'deki herhangi bir script tarafından okunabilir; bu yüzden anahtarını paylaşılan/güvensiz bir cihazda girme.
 
 ## Teknik
 
