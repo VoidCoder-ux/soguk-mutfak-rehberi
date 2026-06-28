@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Garde Manger — Soğuk Mutfak Rehberi</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0f0f0d;--bg2:#161613;--bg3:#1e1e1a;--bg4:#252520;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+  --text:#f0ede6;--text2:#9e9b92;--text3:#5a5852;
+  --gold:#c9a96e;--gold2:#e8c98a;--gold-bg:rgba(201,169,110,0.08);
+  --green:#7ec896;--green-bg:rgba(126,200,150,0.1);
+  --red:#e07070;--red-bg:rgba(224,112,112,0.1);
+  --blue:#7ab3d4;--blue-bg:rgba(122,179,212,0.1);
+  --r:12px;--rs:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+
+header{padding:15px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--bg2);position:sticky;top:0;z-index:100;}
+.logo{display:flex;align-items:center;gap:11px;}
+.logo-icon{width:33px;height:33px;background:var(--gold-bg);border:1px solid rgba(201,169,110,.25);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.logo-name{font-family:'Playfair Display',serif;font-size:17px;color:var(--gold);}
+.logo-sub{font-size:10px;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;}
+.model-wrap{display:flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border2);border-radius:99px;padding:5px 13px;}
+.mdot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 2s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+#model-select{background:transparent;border:none;color:var(--gold);font-size:12px;font-family:'DM Mono',monospace;cursor:pointer;outline:none;}
+#model-select option{background:#1e1e1a;}
+
+.layout{display:flex;flex:1;height:calc(100vh - 56px);}
+
+aside{width:238px;min-width:238px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+.nav-wrap{padding:13px 13px 7px;}
+.nav-lbl{font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);padding:0 8px;margin-bottom:5px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 11px;border-radius:var(--rs);cursor:pointer;font-size:13px;color:var(--text2);transition:background .12s;}
+.nav-item:hover{background:var(--bg3);color:var(--text);}
+.nav-item.active{background:var(--gold-bg);color:var(--gold);}
+.div{height:1px;background:var(--border);margin:7px 13px;}
+.recent-list{flex:1;overflow-y:auto;padding:5px 13px 13px;}
+.recent-list::-webkit-scrollbar{width:3px;}
+.recent-list::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:2px;}
+.ri{padding:7px 10px;border-radius:var(--rs);cursor:pointer;font-size:12.5px;color:var(--text2);transition:background .12s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ri:hover{background:var(--bg3);color:var(--text);}
+
+main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+
+.search-wrap{padding:15px 20px;border-bottom:1px solid var(--border);background:var(--bg2);}
+.search-row{display:flex;gap:8px;}
+.si{flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:11px 15px;font-size:14px;color:var(--text);font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s;}
+.si:focus{border-color:var(--gold);}
+.si::placeholder{color:var(--text3);}
+.sbtn{background:var(--gold);color:#0f0f0d;border:none;border-radius:var(--r);padding:11px 22px;font-size:13.5px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;transition:background .15s,transform .1s;white-space:nowrap;}
+.sbtn:hover{background:var(--gold2);}
+.sbtn:active{transform:scale(.97);}
+.sbtn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.qtags{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;}
+.qtag{font-size:11.5px;padding:4px 12px;border-radius:99px;border:1px solid var(--border2);color:var(--text2);cursor:pointer;transition:all .12s;background:transparent;font-family:'DM Sans',sans-serif;}
+.qtag:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-bg);}
+
+.content{flex:1;overflow-y:auto;padding:22px;}
+.content::-webkit-scrollbar{width:4px;}
+.content::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:2px;}
+
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;gap:10px;}
+.ei{font-size:42px;opacity:.33;margin-bottom:5px;}
+.et{font-family:'Playfair Display',serif;font-size:20px;color:var(--text2);font-weight:400;}
+.ed{font-size:13px;color:var(--text3);max-width:330px;line-height:1.6;}
+.chips{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-top:8px;}
+.chip{font-size:12.5px;padding:7px 15px;border:1px solid var(--border2);border-radius:99px;color:var(--text2);cursor:pointer;transition:all .12s;background:var(--bg3);}
+.chip:hover{border-color:var(--gold);color:var(--gold);}
+
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:18px;}
+.dots{display:flex;gap:5px;}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--gold);animation:bounce 1.2s infinite;}
+.dot:nth-child(2){animation-delay:.15s;}.dot:nth-child(3){animation-delay:.3s;}
+@keyframes bounce{0%,80%,100%{transform:scale(.6);opacity:.3;}40%{transform:scale(1);opacity:1;}}
+.lsteps{display:flex;flex-direction:column;gap:7px;min-width:255px;}
+.ls{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--text3);padding:8px 13px;border-radius:var(--rs);background:var(--bg2);border:1px solid var(--border);transition:all .3s;}
+.ls.active{color:var(--gold);border-color:rgba(201,169,110,.25);background:var(--gold-bg);}
+.ls.done{color:var(--green);border-color:rgba(126,200,150,.25);background:var(--green-bg);}
+
+.ebox{background:var(--red-bg);border:1px solid rgba(224,112,112,.3);border-radius:var(--r);padding:22px 26px;text-align:center;}
+.eico{font-size:28px;margin-bottom:7px;}.etit{font-size:15px;color:var(--red);font-weight:500;margin-bottom:5px;}
+.edesc{font-size:13px;color:var(--text3);line-height:1.5;}
+
+.recipe{animation:fu .35s ease;}
+@keyframes fu{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px;}
+.rtitle{font-family:'Playfair Display',serif;font-size:26px;font-weight:600;line-height:1.2;}
+.rtitle-tr{font-size:14px;color:var(--text2);font-weight:300;margin-top:3px;}
+.abtns{display:flex;gap:7px;flex-shrink:0;}
+.abtn{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--rs);padding:8px 14px;font-size:12px;color:var(--text2);cursor:pointer;transition:all .13s;font-family:'DM Sans',sans-serif;white-space:nowrap;}
+.abtn:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-bg);}
+.abtn.saved{border-color:rgba(126,200,150,.4);color:var(--green);background:var(--green-bg);}
+.abtn.pdf{border-color:rgba(122,179,212,.35);color:var(--blue);}
+.abtn.pdf:hover{border-color:var(--blue);background:var(--blue-bg);}
+.mrow{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:13px;}
+.pill{font-size:11.5px;padding:4px 11px;border-radius:99px;border:1px solid var(--border);color:var(--text2);background:var(--bg2);}
+.pill.g{border-color:rgba(201,169,110,.3);color:var(--gold);background:var(--gold-bg);}
+.pill.gr{border-color:rgba(126,200,150,.3);color:var(--green);background:var(--green-bg);}
+.pill.b{border-color:rgba(122,179,212,.3);color:var(--blue);background:var(--blue-bg);}
+.srcbar{background:var(--bg3);border:1px solid var(--border);border-left:3px solid var(--gold);border-radius:0 var(--rs) var(--rs) 0;padding:9px 13px;display:flex;align-items:center;gap:10px;margin-bottom:20px;}
+.sl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;}
+.sv{font-size:12.5px;color:var(--text2);font-family:'DM Mono',monospace;}
+.vbadge{margin-left:auto;font-size:11px;color:var(--green);background:var(--green-bg);border:1px solid rgba(126,200,150,.3);padding:3px 9px;border-radius:99px;}
+
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:11px;}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;}
+.card.full{grid-column:1/-1;}
+.ctitle{font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:11px;display:flex;align-items:center;gap:6px;}
+.ctitle::before{content:'';display:block;width:14px;height:1px;background:var(--gold);}
+
+.ing{display:flex;justify-content:space-between;align-items:center;padding:6px 9px;border-radius:6px;font-size:13px;}
+.ing:nth-child(odd){background:var(--bg3);}.ing:nth-child(even){background:var(--bg4);}
+.ia{color:var(--gold);font-family:'DM Mono',monospace;font-size:12.5px;}
+.fn{font-size:11px;color:var(--text3);font-style:italic;margin-top:7px;}
+
+.step{display:flex;gap:12px;margin-bottom:15px;}
+.snum{width:25px;height:25px;min-width:25px;border-radius:50%;background:var(--gold-bg);border:1px solid rgba(201,169,110,.3);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--gold);font-family:'DM Mono',monospace;font-weight:500;margin-top:1px;}
+.sbody{flex:1;}
+.shead{font-size:12px;font-weight:500;color:var(--gold);margin-bottom:4px;}
+.stxt{font-size:13px;color:var(--text);line-height:1.65;}
+.stags{display:flex;gap:6px;margin-top:5px;flex-wrap:wrap;}
+.stag{font-size:11px;padding:2px 8px;border-radius:4px;font-family:'DM Mono',monospace;}
+.st{background:var(--blue-bg);color:var(--blue);}
+.sd{background:var(--gold-bg);color:var(--gold);}
+.sc{background:var(--red-bg);color:var(--red);}
+
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.sitem{background:var(--bg3);padding:9px 11px;border-radius:var(--rs);}
+.slbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px;}
+.sval{font-size:13.5px;font-family:'DM Mono',monospace;color:var(--green);font-weight:500;}
+.sval.n{color:var(--text);}.sval.sm{font-size:11px;color:var(--text2);font-weight:400;line-height:1.4;}
+.warn{background:var(--red-bg);border-left:3px solid var(--red);padding:8px 12px;margin-top:8px;font-size:12.5px;color:var(--red);border-radius:0 6px 6px 0;line-height:1.5;}
+
+.mise-item{display:flex;align-items:flex-start;gap:7px;padding:5px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--text);}
+.mise-item::before{content:'◆';color:var(--gold);font-size:9px;margin-top:3px;flex-shrink:0;}
+
+.tech{padding:9px 12px;background:var(--bg3);border-radius:var(--rs);border-left:2px solid var(--gold);margin-bottom:7px;}
+.tname{font-size:12.5px;font-weight:500;color:var(--gold);margin-bottom:3px;}
+.texp{font-size:12.5px;color:var(--text2);line-height:1.55;}
+
+.cnote{background:var(--gold-bg);border:1px solid rgba(201,169,110,.2);border-radius:var(--r);padding:14px 16px;font-size:13px;color:var(--text2);line-height:1.65;font-style:italic;margin-bottom:11px;}
+.clbl{font-style:normal;font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:7px;display:flex;align-items:center;gap:6px;}
+.clbl::before{content:'';display:block;width:14px;height:1px;background:var(--gold);}
+.alt{font-style:normal;font-size:11.5px;color:var(--gold);margin-top:7px;}
+
+.src-item{font-size:12px;color:var(--text3);font-family:'DM Mono',monospace;padding:7px 11px;background:var(--bg3);border-radius:6px;border-left:2px solid var(--gold);line-height:1.5;margin-bottom:6px;}
+
+@media(max-width:768px){aside{display:none;}.grid{grid-template-columns:1fr;}.sgrid{grid-template-columns:1fr;}}
+
+/* API KEY MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+.modal-overlay.hidden{display:none;}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);padding:28px 30px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.5);}
+.modal-title{font-family:'Playfair Display',serif;font-size:20px;color:var(--text);margin-bottom:6px;}
+.modal-desc{font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:20px;}
+.modal-label{font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:6px;}
+.modal-input{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--rs);padding:10px 14px;font-size:13.5px;color:var(--text);font-family:'DM Mono',monospace;outline:none;transition:border-color .2s;margin-bottom:6px;}
+.modal-input:focus{border-color:var(--gold);}
+.modal-hint{font-size:11.5px;color:var(--text3);margin-bottom:18px;line-height:1.5;}
+.modal-hint a{color:var(--gold);text-decoration:none;}
+.modal-hint a:hover{text-decoration:underline;}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end;}
+.modal-save{background:var(--gold);color:#0f0f0d;border:none;border-radius:var(--rs);padding:9px 20px;font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;transition:background .15s;}
+.modal-save:hover{background:var(--gold2);}
+.modal-cancel{background:transparent;border:1px solid var(--border2);border-radius:var(--rs);padding:9px 16px;font-size:13px;color:var(--text2);font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s;}
+.modal-cancel:hover{border-color:var(--border);color:var(--text);}
+.key-status{display:flex;align-items:center;gap:6px;font-size:12px;}
+.key-dot{width:7px;height:7px;border-radius:50%;}
+.key-dot.ok{background:var(--green);}
+.key-dot.no{background:var(--red);}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🔪</div>
+    <div>
+      <div class="logo-name">Garde Manger</div>
+      <div class="logo-sub">Profesyonel Soğuk Mutfak Rehberi</div>
+    </div>
+  </div>
+  <div class="model-wrap">
+    <div class="mdot"></div>
+    <select id="model-select">
+      <option value="claude-sonnet-4-6">claude-sonnet-4-6</option>
+      <option value="claude-opus-4-6">claude-opus-4-6</option>
+    </select>
+  </div>
+
+  <button class="abtn" id="key-btn" onclick="openKeyModal()" style="font-size:12px;padding:6px 13px;border-radius:99px;">
+    <span id="key-indicator">🔴</span> API Key
+  </button>
+</header>
+
+<div class="layout">
+  <aside>
+    <div class="nav-wrap">
+      <div class="nav-lbl">Menü</div>
+      <div class="nav-item active" id="nav-search" onclick="showSearch()">
+        <span>🔍</span> Tarif Ara
+      </div>
+      <div class="nav-item" id="nav-saved" onclick="showSaved()">
+        <span>📌</span> Kaydedilenler
+        <span id="saved-count" style="margin-left:auto;font-size:11px;background:var(--bg4);padding:2px 7px;border-radius:99px;color:var(--text3)">0</span>
+      </div>
+    </div>
+    <div class="div"></div>
+    <div class="nav-lbl" style="padding:0 21px;margin-top:6px">Son Aramalar</div>
+    <div class="recent-list" id="recent-list"></div>
+  </aside>
+
+  <main>
+    <div class="search-wrap">
+      <div class="search-row">
+        <input class="si" id="q" type="text"
+          placeholder="Tarif ara — Somon gravlax, Foie gras terrin, Vitello tonnato..."
+          onkeydown="if(event.key==='Enter')doSearch()">
+        <button class="sbtn" id="sbtn" onclick="doSearch()">Ara</button>
+      </div>
+      <div class="qtags">
+        <span class="qtag" onclick="qs('Somon Carpaccio')">Somon Carpaccio</span>
+        <span class="qtag" onclick="qs('Vitello Tonnato')">Vitello Tonnato</span>
+        <span class="qtag" onclick="qs('Pate de Campagne')">Pate de Campagne</span>
+        <span class="qtag" onclick="qs('Hollandaise sos')">Hollandaise</span>
+        <span class="qtag" onclick="qs('Nicoise Salata')">Niçoise Salata</span>
+        <span class="qtag" onclick="qs('Gravlax')">Gravlax</span>
+        <span class="qtag" onclick="qs('Tabouleh')">Tabouleh</span>
+        <span class="qtag" onclick="qs('Duck Rillettes')">Duck Rillettes</span>
+      </div>
+    </div>
+    <div class="content" id="content">
+      <div class="empty">
+        <div class="ei">👨‍🍳</div>
+        <div class="et">Profesyonel Soğuk Mutfak</div>
+        <div class="ed">Escoffier, Larousse Gastronomique ve CIA kaynaklarından profesyonel mutfak standartlarında tarifler.</div>
+        <div class="chips">
+          <div class="chip" onclick="qs('Somon Gravlax')">🐟 Somon Gravlax</div>
+          <div class="chip" onclick="qs('Duck Rillettes')">🦆 Duck Rillettes</div>
+          <div class="chip" onclick="qs('Caesar Salata')">🥗 Caesar Salata</div>
+          <div class="chip" onclick="qs('Foie Gras Terrin')">🍖 Foie Gras Terrin</div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+var saved   = JSON.parse(localStorage.getItem('gm_saved')  || '[]');
+var recent  = JSON.parse(localStorage.getItem('gm_recent') || '[]');
+var current = null;
+
+var SYS = 'Sen profesyonel bir soğuk mutfak (garde manger) asistanısın. Kullanıcın Türkiye\'de deneyimli bir soğuk şef.\n\nKAYNAK HİYERARŞİSİ: Escoffier Le Guide Culinaire, Larousse Gastronomique, The Professional Chef (CIA), Le Cordon Bleu, Michelin yıldızlı şef yayınları, ACF standartları. EV TİPİ BİLGİ KULLANMA.\n\nHer adımda: nasıl yapılır (teknik hareket) + kontrol noktası + yaygın hata. 2-3 cümle yeterli. Gram/ml/°C kullan.\n\nSADECE geçerli JSON döndür. Başka metin yok, markdown yok.\n\n{"name_original":"","name_tr":"","source":"","verified_by":"","verification_count":2,"category":"","difficulty":"","service_type":"","portions":10,"prep_time":"","total_time":"","ingredients":[{"name":"","amount":"","unit":""}],"fire_note":"","steps":[{"title":"","text":"","temp":"","duration":"","critical":""}],"techniques":[{"name":"","explanation":""}],"mise_en_place":[""],"plating":"","variations":"","food_safety":{"storage_temp":"","max_duration":"","service_temp":"","haccp_notes":""},"warnings":[""],"chef_note":"","local_alternatives":"","sources_full":[""]}';
+
+function $i(id){ return document.getElementById(id); }
+function sc(h){ $i('content').innerHTML = h; }
+function qs(q){ $i('q').value = q; doSearch(); }
+function updateCount(){ $i('saved-count').textContent = saved.length; }
+
+function updateRecent(){
+  $i('recent-list').innerHTML = recent.length
+    ? recent.map(function(r){ return '<div class="ri" onclick="qs(\''+r.replace(/'/g,"\\'")+'\')">'+ r +'</div>'; }).join('')
+    : '<div style="padding:9px 10px;font-size:12px;color:var(--text3)">Henüz arama yok</div>';
+}
+
+function addRecent(q){
+  recent = [q].concat(recent.filter(function(r){ return r!==q; })).slice(0,12);
+  localStorage.setItem('gm_recent', JSON.stringify(recent));
+  updateRecent();
+}
+
+function showSearch(){
+  $i('nav-search').classList.add('active');
+  $i('nav-saved').classList.remove('active');
+  if(current){ render(current); }
+  else { sc('<div class="empty"><div class="ei">🔍</div><div class="et">Tarif Ara</div></div>'); }
+}
+
+function showSaved(){
+  $i('nav-saved').classList.add('active');
+  $i('nav-search').classList.remove('active');
+  if(!saved.length){
+    sc('<div class="empty"><div class="ei">📌</div><div class="et">Kaydedilen tarif yok</div><div class="ed">Tarif araması yap, sonra "+ Kaydet" butonuyla buraya ekle.</div></div>');
+    return;
+  }
+  sc('<div style="margin-bottom:16px"><div style="font-family:\'Playfair Display\',serif;font-size:20px;margin-bottom:3px">'+saved.length+' Kayıtlı Tarif</div></div>'
+    + '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px">'
+    + saved.map(function(r,i){
+        return '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:13px 15px;cursor:pointer" onclick="loadSaved('+i+')">'
+          + '<div style="font-size:13.5px;font-weight:500;margin-bottom:3px">'+r.name_original+'</div>'
+          + '<div style="font-size:11.5px;color:var(--text3);margin-bottom:9px">'+r.name_tr+'</div>'
+          + '<span style="font-size:11px;padding:2px 9px;border-radius:99px;background:var(--gold-bg);color:var(--gold);border:1px solid rgba(201,169,110,.2)">'+(r.category||'')+'</span>'
+          + '</div>';
+      }).join('')
+    + '</div>');
+}
+
+function loadSaved(i){ current = saved[i]; showSearch(); }
+
+async function doSearch(){
+  if(!API_KEY){ openKeyModal(); return; }
+  var q = $i('q').value.trim();
+  if(!q) return;
+  var btn = $i('sbtn');
+  btn.disabled = true; btn.textContent = '...';
+  addRecent(q);
+
+  sc('<div class="loading">'
+    + '<div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>'
+    + '<div class="lsteps">'
+    + '<div class="ls active" id="l1">📚 Escoffier &amp; Larousse derleniyor...</div>'
+    + '<div class="ls" id="l2">🔬 Teknik adımlar hazırlanıyor...</div>'
+    + '<div class="ls" id="l3">✓ HACCP kontrolü yapılıyor...</div>'
+    + '<div class="ls" id="l4">🍽 Tarif kartı oluşturuluyor...</div>'
+    + '</div></div>');
+
+  var si = 1;
+  var timer = setInterval(function(){
+    var p = $i('l'+si); if(p){ p.classList.remove('active'); p.classList.add('done'); }
+    si++;
+    var c = $i('l'+si); if(c) c.classList.add('active');
+    if(si > 4) clearInterval(timer);
+  }, 1500);
+
+  try {
+    var model = $i('model-select').value;
+    var res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': API_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: model,
+        max_tokens: 4000,
+        system: SYS,
+        messages: [{ role: 'user', content: '"' + q + '" tarifi. 10 porsiyon. Sadece JSON döndür.' }]
+      })
+    });
+
+    clearInterval(timer);
+    for(var x=1;x<=4;x++){ var el=$i('l'+x); if(el){el.classList.remove('active');el.classList.add('done');} }
+
+    if(!res.ok){
+      var eb = await res.json().catch(function(){ return {}; });
+      throw new Error('API hatası ' + res.status + (eb.error && eb.error.message ? ': ' + eb.error.message : ''));
+    }
+
+    var data = await res.json();
+    var text = (data.content || []).filter(function(c){ return c.type==='text'; }).map(function(c){ return c.text; }).join('');
+
+    // JSON çıkar
+    var jsonStr = text;
+    var fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+    if(fenced){ jsonStr = fenced[1]; }
+    else { var m = text.match(/\{[\s\S]*\}/); if(m) jsonStr = m[0]; }
+
+    var recipe;
+    try {
+      recipe = JSON.parse(jsonStr);
+    } catch(e1) {
+      // trailing comma ve kontrol karakterlerini temizle
+      var fixed = jsonStr
+        .replace(/,(\s*[}\]])/g, '$1')
+        .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '');
+      recipe = JSON.parse(fixed);
+    }
+
+    current = recipe;
+    render(recipe);
+
+  } catch(err){
+    clearInterval(timer);
+    sc('<div class="ebox"><div class="eico">⚠️</div><div class="etit">Arama Hatası</div><div class="edesc">'+err.message+'<br><br>Lütfen tekrar deneyin.</div></div>');
+  }
+
+  btn.disabled = false; btn.textContent = 'Ara';
+}
+
+function render(r){
+  var isSaved = saved.some(function(s){ return s.name_original === r.name_original; });
+
+  var ings = (r.ingredients||[]).map(function(i){
+    return '<div class="ing"><span>'+i.name+'</span><span class="ia">'+i.amount+' '+(i.unit||'')+'</span></div>';
+  }).join('');
+
+  var steps = (r.steps||[]).map(function(s,i){
+    return '<div class="step">'
+      + '<div class="snum">'+(i+1)+'</div>'
+      + '<div class="sbody">'
+      + (s.title ? '<div class="shead">'+s.title+'</div>' : '')
+      + '<div class="stxt">'+s.text+'</div>'
+      + '<div class="stags">'
+      + (s.temp     ? '<span class="stag st">🌡 '+s.temp+'</span>' : '')
+      + (s.duration ? '<span class="stag sd">⏱ '+s.duration+'</span>' : '')
+      + (s.critical ? '<span class="stag sc">⚠ '+s.critical+'</span>' : '')
+      + '</div></div></div>';
+  }).join('');
+
+  var mise = (r.mise_en_place||[]).filter(Boolean).map(function(m){
+    return '<div class="mise-item">'+m+'</div>';
+  }).join('');
+
+  var techs = (r.techniques||[]).filter(function(t){ return t.name; }).map(function(t){
+    return '<div class="tech"><div class="tname">'+t.name+'</div><div class="texp">'+t.explanation+'</div></div>';
+  }).join('');
+
+  var warns = (r.warnings||[]).filter(Boolean).map(function(w){
+    return '<div class="warn">⚠ '+w+'</div>';
+  }).join('');
+
+  var srcs = (r.sources_full||[]).filter(Boolean).map(function(s){
+    return '<div class="src-item">'+s+'</div>';
+  }).join('');
+
+  var fs = r.food_safety || {};
+
+  sc('<div class="recipe">'
+
+    + '<div class="title-row">'
+    +   '<div><div class="rtitle">'+(r.name_original||'')+'</div><div class="rtitle-tr">'+(r.name_tr||'')+'</div></div>'
+    +   '<div class="abtns">'
+    +     '<button class="abtn'+(isSaved?' saved':'')+ '" id="save-btn" onclick="toggleSave()">'+(isSaved?'✓ Kaydedildi':'+ Kaydet')+'</button>'
+    +     '<button class="abtn pdf" onclick="exportPDF()">↓ PDF</button>'
+    +   '</div>'
+    + '</div>'
+
+    + '<div class="mrow">'
+    +   '<span class="pill g">📂 '+(r.category||'')+'</span>'
+    +   '<span class="pill">'+(r.difficulty||'')+'</span>'
+    +   '<span class="pill">'+(r.service_type||'')+'</span>'
+    +   '<span class="pill b">⏱ '+(r.total_time||'')+'</span>'
+    +   '<span class="pill gr">👥 '+(r.portions||10)+' porsiyon</span>'
+    + '</div>'
+
+    + '<div class="srcbar">'
+    +   '<div><div class="sl">Kaynak</div><div class="sv">'+(r.source||'')+'</div></div>'
+    +   '<div class="vbadge">✓ '+(r.verification_count||2)+' kaynak doğruladı</div>'
+    + '</div>'
+
+    + '<div class="grid">'
+    +   '<div class="card">'
+    +     '<div class="ctitle">Malzemeler ('+(r.portions||10)+' porsiyon)</div>'
+    +     ings
+    +     (r.fire_note ? '<div class="fn">📝 '+r.fire_note+'</div>' : '')
+    +   '</div>'
+    +   '<div class="card">'
+    +     '<div class="ctitle">Gıda Güvenliği — HACCP</div>'
+    +     '<div class="sgrid">'
+    +       '<div class="sitem"><div class="slbl">Saklama</div><div class="sval">'+(fs.storage_temp||'—')+'</div></div>'
+    +       '<div class="sitem"><div class="slbl">Maks. Süre</div><div class="sval n">'+(fs.max_duration||'—')+'</div></div>'
+    +       '<div class="sitem"><div class="slbl">Servis</div><div class="sval">'+(fs.service_temp||'—')+'</div></div>'
+    +       '<div class="sitem"><div class="slbl">HACCP Notu</div><div class="sval sm">'+(fs.haccp_notes||'—')+'</div></div>'
+    +     '</div>'
+    +     warns
+    +   '</div>'
+    + '</div>'
+
+    + (mise ? '<div class="card full" style="margin-bottom:11px"><div class="ctitle">Mise en Place — Ön Hazırlık</div>'+mise+'</div>' : '')
+
+    + '<div class="card full" style="margin-bottom:11px"><div class="ctitle">Teknik Adımlar</div>'+steps+'</div>'
+
+    + (techs ? '<div class="card full" style="margin-bottom:11px"><div class="ctitle">Kullanılan Teknikler</div>'+techs+'</div>' : '')
+
+    + (r.plating ? '<div class="card full" style="margin-bottom:11px;border-left:2px solid var(--gold)"><div class="ctitle">Tabak Sunumu & Plating</div><div style="font-size:13.5px;line-height:1.7">'+r.plating+'</div></div>' : '')
+
+    + (r.variations ? '<div class="card full" style="margin-bottom:11px"><div class="ctitle">Varyasyonlar</div><div style="font-size:13.5px;color:var(--text2);line-height:1.7">'+r.variations+'</div></div>' : '')
+
+    + (r.chef_note ? '<div class="cnote"><div class="clbl">Şef Notu</div>'+r.chef_note+(r.local_alternatives ? '<div class="alt">🇹🇷 Türkiye Alternatifi: '+r.local_alternatives+'</div>' : '')+'</div>' : '')
+
+    + (srcs ? '<div class="card full"><div class="ctitle">Kaynaklar</div>'+srcs+'</div>' : '')
+
+  + '</div>');
+}
+
+function toggleSave(){
+  if(!current) return;
+  var idx = saved.findIndex(function(s){ return s.name_original === current.name_original; });
+  var btn = $i('save-btn');
+  if(idx === -1){
+    saved.push(current);
+    if(btn){ btn.textContent = '✓ Kaydedildi'; btn.classList.add('saved'); }
+  } else {
+    saved.splice(idx, 1);
+    if(btn){ btn.textContent = '+ Kaydet'; btn.classList.remove('saved'); }
+  }
+  localStorage.setItem('gm_saved', JSON.stringify(saved));
+  updateCount();
+}
+
+function exportPDF(){
+  if(!current){ alert('Önce bir tarif aratın.'); return; }
+  var r = current;
+  var fs = r.food_safety || {};
+
+  var css = 'body{font-family:Georgia,serif;color:#111;max-width:760px;margin:32px auto;padding:0 32px;font-size:13px;}h1{font-size:25px;margin-bottom:3px;border-bottom:2px solid #c9a96e;padding-bottom:8px;}h2{font-size:13px;color:#777;font-weight:normal;margin-bottom:16px;}.meta{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;}.meta span{background:#f5f0e8;padding:3px 9px;border-radius:4px;font-size:11px;}.src{background:#faf7f0;border-left:3px solid #c9a96e;padding:7px 12px;margin-bottom:20px;font-size:11.5px;color:#666;}.sec{font-size:10px;font-weight:bold;letter-spacing:.1em;text-transform:uppercase;color:#aaa;margin:20px 0 7px;border-bottom:1px solid #eee;padding-bottom:3px;}.ing{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f5f0e8;font-size:12.5px;}.ia{color:#c9a96e;font-family:monospace;}.step{display:flex;gap:11px;margin-bottom:14px;}.sn{width:23px;height:23px;min-width:23px;border-radius:50%;background:#f5f0e8;border:1px solid #c9a96e;display:flex;align-items:center;justify-content:center;font-size:11px;color:#c9a96e;font-family:monospace;font-weight:bold;}.sh{font-size:11.5px;font-weight:bold;color:#c9a96e;margin-bottom:3px;}.st{font-size:12.5px;line-height:1.65;}.tags{display:flex;gap:6px;margin-top:4px;flex-wrap:wrap;}.tag{font-size:10.5px;padding:2px 7px;border-radius:3px;font-family:monospace;}.tt{background:#eaf3fb;color:#185FA5;}.td{background:#faf3e8;color:#c9a96e;}.tc{background:#fceaea;color:#a32d2d;}.sg{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:7px;}.si{background:#f9f9f9;padding:8px 10px;border-radius:5px;}.sl{font-size:9.5px;color:#aaa;text-transform:uppercase;letter-spacing:.07em;}.sv{font-size:13px;font-weight:bold;font-family:monospace;color:#2d7a4a;}.w{background:#fceaea;border-left:3px solid #e24b4a;padding:7px 11px;margin:5px 0;font-size:12px;color:#a32d2d;border-radius:0 4px 4px 0;}.tech{padding:7px 10px;background:#f9f9f9;border-left:2px solid #c9a96e;margin-bottom:6px;}.tn{font-size:11.5px;font-weight:bold;color:#c9a96e;}.te{font-size:12px;color:#666;line-height:1.5;}.cn{background:#faf7f0;border:1px solid #e8d9b5;border-radius:7px;padding:12px 14px;font-size:12.5px;color:#666;font-style:italic;line-height:1.65;}.mi{font-size:12.5px;padding:4px 0;border-bottom:1px solid #f0ede6;}.mi::before{content:"◆ ";color:#c9a96e;font-size:9px;}.sri{font-size:11px;color:#888;font-family:monospace;padding:4px 0;border-bottom:1px solid #f0ede6;}footer{font-size:10px;color:#ccc;text-align:center;margin-top:32px;border-top:1px solid #eee;padding-top:9px;}@media print{body{margin:0;}}';
+
+  var ingH  = (r.ingredients||[]).map(function(i){ return '<div class="ing"><span>'+i.name+'</span><span class="ia">'+i.amount+' '+(i.unit||'')+'</span></div>'; }).join('');
+  var stepH = (r.steps||[]).map(function(s,i){ return '<div class="step"><div class="sn">'+(i+1)+'</div><div>'+(s.title?'<div class="sh">'+s.title+'</div>':'')+'<div class="st">'+s.text+'</div><div class="tags">'+(s.temp?'<span class="tag tt">🌡 '+s.temp+'</span>':'')+(s.duration?'<span class="tag td">⏱ '+s.duration+'</span>':'')+(s.critical?'<span class="tag tc">⚠ '+s.critical+'</span>':'')+'</div></div></div>'; }).join('');
+  var miseH = (r.mise_en_place||[]).filter(Boolean).map(function(m){ return '<div class="mi">'+m+'</div>'; }).join('');
+  var techH = (r.techniques||[]).filter(function(t){ return t.name; }).map(function(t){ return '<div class="tech"><div class="tn">'+t.name+'</div><div class="te">'+t.explanation+'</div></div>'; }).join('');
+  var warnH = (r.warnings||[]).filter(Boolean).map(function(w){ return '<div class="w">⚠ '+w+'</div>'; }).join('');
+  var srcH  = (r.sources_full||[]).filter(Boolean).map(function(s){ return '<div class="sri">'+s+'</div>'; }).join('');
+
+  var html = '<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8"><title>'+r.name_original+'</title><style>'+css+'</style></head><body>'
+    + '<h1>'+r.name_original+'</h1><h2>'+(r.name_tr||'')+'</h2>'
+    + '<div class="meta"><span>📂 '+(r.category||'')+'</span><span>'+(r.difficulty||'')+'</span><span>'+(r.service_type||'')+'</span><span>⏱ '+(r.total_time||'')+'</span><span>👥 '+(r.portions||10)+' porsiyon</span></div>'
+    + '<div class="src"><strong>Kaynak:</strong> '+(r.source||'')+' | <strong>Doğrulama:</strong> '+(r.verification_count||2)+' kaynak</div>'
+    + (miseH ? '<div class="sec">Mise en Place</div>'+miseH : '')
+    + '<div class="sec">Malzemeler ('+(r.portions||10)+' porsiyon)</div>'+ingH
+    + (r.fire_note ? '<p style="font-size:11px;color:#aaa;font-style:italic;margin-top:6px">📝 '+r.fire_note+'</p>' : '')
+    + '<div class="sec">Teknik Adımlar</div>'+stepH
+    + (techH ? '<div class="sec">Kullanılan Teknikler</div>'+techH : '')
+    + (r.plating ? '<div class="sec">Tabak Sunumu</div><p style="font-size:12.5px;line-height:1.65">'+r.plating+'</p>' : '')
+    + (r.variations ? '<div class="sec">Varyasyonlar</div><p style="font-size:12.5px;color:#666;line-height:1.65">'+r.variations+'</p>' : '')
+    + '<div class="sec">Gıda Güvenliği — HACCP</div>'
+    + '<div class="sg"><div class="si"><div class="sl">Saklama</div><div class="sv">'+(fs.storage_temp||'—')+'</div></div><div class="si"><div class="sl">Maks. Süre</div><div class="sv" style="color:#333">'+(fs.max_duration||'—')+'</div></div><div class="si"><div class="sl">Servis</div><div class="sv">'+(fs.service_temp||'—')+'</div></div><div class="si"><div class="sl">HACCP Notu</div><div style="font-size:11px;color:#666;margin-top:2px">'+(fs.haccp_notes||'—')+'</div></div></div>'
+    + warnH
+    + (r.chef_note ? '<div class="sec">Şef Notu</div><div class="cn">'+r.chef_note+(r.local_alternatives?'<br><br><strong style="font-style:normal;color:#c9a96e">🇹🇷 Türkiye Alternatifi:</strong> '+r.local_alternatives:'')+'</div>' : '')
+    + (srcH ? '<div class="sec">Kaynaklar</div>'+srcH : '')
+    + '<footer>Garde Manger — Profesyonel Soğuk Mutfak Rehberi</footer>'
+    + '</body></html>';
+
+  var blob = new Blob([html], {type:'text/html;charset=utf-8'});
+  var url  = URL.createObjectURL(blob);
+  var a    = document.createElement('a');
+  a.href = url;
+  a.download = (r.name_original||'tarif').replace(/\s+/g,'_') + '.html';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+}
+
+
+// ── API KEY ────────────────────────────────────────────
+var API_KEY = localStorage.getItem('gm_api_key') || '';
+
+function updateKeyIndicator(){
+  var ind = $i('key-indicator');
+  if(!ind) return;
+  ind.textContent = API_KEY ? '🟢' : '🔴';
+}
+
+function openKeyModal(){
+  $i('key-input').value = API_KEY;
+  $i('key-modal').classList.remove('hidden');
+  setTimeout(function(){ $i('key-input').focus(); }, 100);
+}
+
+function closeKeyModal(){
+  $i('key-modal').classList.add('hidden');
+}
+
+function saveKey(){
+  var val = $i('key-input').value.trim();
+  if(!val){ alert('Lütfen geçerli bir API anahtarı gir.'); return; }
+  if(!val.startsWith('sk-ant-')){ 
+    if(!confirm('Anahtar genellikle sk-ant- ile başlar. Yine de kaydetmek istiyor musun?')) return;
+  }
+  API_KEY = val;
+  localStorage.setItem('gm_api_key', API_KEY);
+  updateKeyIndicator();
+  closeKeyModal();
+}
+
+// Modal dışına tıklayınca kapat
+document.addEventListener('click', function(e){
+  if(e.target.id === 'key-modal') closeKeyModal();
+});
+
+// Enter tuşu ile kaydet
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape') closeKeyModal();
+});
+
+updateCount();
+updateRecent();
+updateKeyIndicator();
+</script>
+
+<div class="modal-overlay hidden" id="key-modal">
+  <div class="modal">
+    <div class="modal-title">Anthropic API Key</div>
+    <div class="modal-desc">Uygulamayı kullanmak için kendi API anahtarını gir. Anahtar sadece tarayıcında saklanır, hiçbir yere gönderilmez.</div>
+    <div class="modal-label">API Anahtarı</div>
+    <input class="modal-input" id="key-input" type="password" placeholder="sk-ant-api03-..." autocomplete="off" spellcheck="false">
+    <div class="modal-hint">
+      Anahtarını <a href="https://console.anthropic.com/settings/keys" target="_blank">console.anthropic.com</a> adresinden alabilirsin.
+    </div>
+    <div class="modal-btns">
+      <button class="modal-cancel" id="key-cancel" onclick="closeKeyModal()">İptal</button>
+      <button class="modal-save" onclick="saveKey()">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
